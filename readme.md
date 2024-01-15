@@ -1,0 +1,1 @@
+# Structured Growth Microservice SDK for TypeScript

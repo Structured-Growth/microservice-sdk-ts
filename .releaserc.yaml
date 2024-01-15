@@ -1,0 +1,44 @@
+branches:
+  - main
+plugins:
+  - '@semantic-release/commit-analyzer'
+  - - '@semantic-release/release-notes-generator'
+    - writerOpts:
+        mainTemplate: |
+          {{> header}}
+
+          ## Reason for change
+            
+          _
+          
+          ## Changes made
+          
+          {{#each commitGroups}}
+  
+          {{#if title}}
+          ### {{title}}
+          
+          {{/if}}
+          {{#each commits}}
+          {{> commit root=@root}}
+          {{/each}}
+          
+          {{/each}}
+
+          {{> footer}}
+          
+          ## Test cases created or updated
+
+          - **created**: _.ts
+          - **updated**: _.ts
+          
+          No test cases was created or updated.
+
+          ## Risk assessment
+
+          Do the changes impact the software requirements (e.g. high level requirements): NO
+          Do the changes impact the software specifications (e.g. API): NO
+          Do the test cases cover the changes made: YES
+
+  - - '@semantic-release/github'
+  - - '@semantic-release/npm'
