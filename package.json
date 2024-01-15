@@ -1,5 +1,5 @@
 {
-  "name": "@sg/microservice-sdk",
+  "name": "@structured-growth/microservice-sdk",
   "version": "1.0.0",
   "description": "",
   "main": "src/index.ts",
@@ -10,7 +10,7 @@
   "license": "Commercial",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Structured-Growth/microservice-sdk-ts"
+    "url": "git+https://github.com/Structured-Growth/microservice-sdk-ts.git"
   },
   "publishConfig": {
     "registry": "https://npm.pkg.github.com/"
