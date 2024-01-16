@@ -1,17 +1,10 @@
 import { config } from "dotenv";
 import { pick, keys } from "lodash";
 import * as joi from "joi";
-import { autoInjectable, injectWithTransform } from "tsyringe";
-import { LoggerTransform } from "../logger/log-context.transform";
-import { Logger } from "../logger/logger";
+import { autoInjectable } from "tsyringe";
 
 @autoInjectable()
 export class ConfigLoader {
-	constructor(
-		@injectWithTransform("Logger", LoggerTransform, { module: "ConfigLoader" })
-		private logger?: Logger
-	) {}
-
 	public loadAndValidate(path: string, rules: object): void {
 		config({ path });
 		const schema = joi.object(rules);
@@ -21,10 +14,8 @@ export class ConfigLoader {
 		});
 
 		if (validationError) {
-			this.logger.error(`Invalid configuration:\n${validationError.message}`);
+			console.error(`Invalid configuration:\n${validationError.message}`);
 			process.exit(1);
-		} else {
-			this.logger.info("Configuration is valid");
 		}
 	}
 }

@@ -27,7 +27,10 @@ jobs:
           node-version: '20'
 
       - name: Install dependencies
-        run: npm i semantic-release@23.0.0
+        run: npm i
+
+      - name: Build
+        run: npx tsc
 
       - name: Release
         env:

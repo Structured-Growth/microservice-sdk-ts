@@ -8,6 +8,7 @@
     "emitDecoratorMetadata": true,
     "allowSyntheticDefaultImports": true,
     "sourceMap": true,
+    "declaration": true,
     "lib": [
       "ES2021"
     ]
