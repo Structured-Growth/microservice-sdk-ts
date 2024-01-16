@@ -30,7 +30,7 @@ jobs:
         run: npm i
 
       - name: Build
-        run: npx tsc
+        run: npm run build
 
       - name: Release
         env:

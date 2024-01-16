@@ -2,8 +2,10 @@
   "name": "@structured-growth/microservice-sdk",
   "version": "1.0.0",
   "description": "",
-  "main": "dist/index",
+  "main": ".dist/index",
   "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
     "test": "ts-node test/test.ts"
   },
   "author": "Structured Growth",
@@ -16,7 +18,7 @@
     "registry": "https://npm.pkg.github.com/"
   },
   "files": [
-    "dist",
+    ".dist",
     "readme.md"
   ],
   "dependencies": {
