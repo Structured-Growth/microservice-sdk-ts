@@ -1,4 +1,5 @@
 export { container, Lifecycle, inject, injectWithTransform, injectable, autoInjectable } from "tsyringe";
+export { connectDatabase } from "./common/sequelize";
 export { Logger } from "./logger/logger";
 export { logWriters } from "./logger/writers";
 export { LambdaConsoleLogWriter } from "./logger/writers/lambda-console-log-writer";

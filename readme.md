@@ -2,9 +2,17 @@
 
 ## Features
 
-- Dependency Container
-- Logger
-- Http request handler
+- Dependency Container with [tsyringe](https://github.com/microsoft/tsyringe);
+- Logger with various writers for different environments; 
+- Http request handler with tracing;
+- Base controller;
+- Universal database connector streamlined for using inside Lambda environment;
+
+## Roadmap
+
+- [ ] Generic validators
+- [ ] Generic interfaces
+- [ ] Cross-app communicator
 
 ## Development
 
