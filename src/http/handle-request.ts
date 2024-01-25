@@ -25,6 +25,7 @@ export function handleRequest(
 			let msg = options.logRequestBody ? JSON.stringify({ query, body }) : "";
 
 			try {
+				controller.init(req, res);
 				const result = await controller[method]?.call(controller, ...Object.values(params), query, body);
 				res.status(200);
 				res.json(result);

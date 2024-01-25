@@ -11,7 +11,7 @@
 ## Roadmap
 
 - [ ] Generic validators
-- [ ] Generic interfaces
+- [x] Generic interfaces
 - [ ] Cross-app communicator
 
 ## Development
