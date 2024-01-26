@@ -27,4 +27,6 @@ export { DefaultModelInterface } from "./interfaces/default-model.interface";
 export { RegionEnum } from "./interfaces/region.enum";
 export { webServer } from "./http/web-server";
 export { validate } from "./validation/validate";
-export * as joi from "joi";
+import * as joi from "joi";
+
+export { joi };
