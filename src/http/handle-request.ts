@@ -3,6 +3,7 @@ import { Request, Response } from "express";
 import * as hyperid from "hyperid";
 import { Logger } from "../logger/logger";
 import { asyncLocalStorage } from "../common/async-local-storage";
+import { ValidationError } from "../common/errors/validation.error";
 
 const generator = hyperid({ urlSafe: true });
 
@@ -23,18 +24,28 @@ export function handleRequest(
 			const startTime = new Date().getTime();
 			const { params, query, body } = req;
 			let msg = options.logRequestBody ? JSON.stringify({ query, body }) : "";
+			let result;
 
 			try {
 				controller.init(req, res);
-				const result = await controller[method]?.call(controller, ...Object.values(params), query, body);
+				result = await controller[method]?.call(controller, ...Object.values(params), query, body);
 				res.status(200);
 				res.json(result);
 				options.logResponses && (msg += " " + JSON.stringify(result));
 			} catch (e) {
-				msg = e.message;
-				msg += "\n" + e.stack;
-				res.status(500);
-				const result = {};
+				res.status([401, 402, 404, 422].includes(e.code) ? e.code : 500);
+				result = {
+					code: e.code,
+					name: e.name,
+					message: e.message,
+				};
+				if (e instanceof ValidationError) {
+					result.validation = e.validation.errors;
+				}
+				if (res.statusCode === 500) {
+					msg = e.message;
+					msg += "\n" + e.stack;
+				}
 				res.json(result);
 				options.logResponses && (msg += " " + JSON.stringify(result));
 			} finally {
