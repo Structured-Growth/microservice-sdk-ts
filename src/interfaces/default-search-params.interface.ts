@@ -5,7 +5,7 @@ export interface DefaultSearchParamsInterface {
 	/**
 	 * Wildcards are allowed:
 	 *
-	 * `arn: ["*:us:*:*:users/*"]`
+	 * `arn: ["*:us:*:*:entity-name/*"]`
 	 */
 	arn?: string[];
 	/**
@@ -19,7 +19,7 @@ export interface DefaultSearchParamsInterface {
 	/**
 	 * Sort data by multiple fields.
 	 *
-	 * `sort: ["createdAt:desc", "firstName:asc", "lastName:asc"]`
+	 * `sort: ["createdAt:asc", "id:desc"]`
 	 *
 	 * @default "createdAt:desc"
 	 */
