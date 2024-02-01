@@ -1,11 +1,13 @@
-import { RegionEnum } from "./region.enum";
-
 export interface DefaultSearchParamsInterface {
 	orgId: number;
 	accountId: number;
-	region?: RegionEnum;
 	id?: number[];
-	arn?: number[];
+	/**
+	 * Wildcards are allowed:
+	 *
+	 * `arn: ["*:us:*:*:users/*"]`
+	 */
+	arn?: string[];
 	/**
 	 * @default 1
 	 */
@@ -15,11 +17,11 @@ export interface DefaultSearchParamsInterface {
 	 */
 	limit?: number;
 	/**
-	 * @default "createdAt"
+	 * Sort data by multiple fields.
+	 *
+	 * `sort: ["createdAt:desc", "firstName:asc", "lastName:asc"]`
+	 *
+	 * @default "createdAt:desc"
 	 */
-	sort?: "createdAt" | "updatedAt";
-	/**
-	 * @default "desc"
-	 */
-	order?: "asc" | "desc";
+	sort?: string[];
 }
