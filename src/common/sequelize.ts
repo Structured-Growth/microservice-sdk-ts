@@ -1,4 +1,3 @@
-import { Sequelize } from "sequelize-typescript";
 import * as pg from "pg";
 import { container } from "tsyringe";
 import { Logger } from "../logger/logger";
@@ -7,6 +6,7 @@ import { Logger } from "../logger/logger";
  * Creates a database connection optimized for using inside AWS Lambda environment.
  */
 export async function connectDatabase(
+	Sequelize,
 	config: {
 		host: string;
 		username: string;
@@ -15,7 +15,7 @@ export async function connectDatabase(
 		port: number;
 	},
 	enableLogging: boolean = false
-): Promise<Sequelize> {
+) {
 	// avoid connection pinning inside lambda environment
 	const extraOptions = process.env.AWS_LAMBDA_FUNCTION_NAME
 		? {
@@ -32,7 +32,7 @@ export async function connectDatabase(
 		  }
 		: {};
 
-	const sequelize: Sequelize = new Sequelize({
+	const sequelize = new Sequelize({
 		dialect: "postgres",
 		dialectModule: pg,
 		...config,

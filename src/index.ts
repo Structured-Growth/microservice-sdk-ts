@@ -24,6 +24,7 @@ export { HasArnInterface } from "./interfaces/has-arn.interface";
 export { BelongsToAccountInterface } from "./interfaces/belongs-to-account.interface";
 export { BelongsToOrgInterface } from "./interfaces/belongs-to-org.interface";
 export { DefaultModelInterface } from "./interfaces/default-model.interface";
+export { RepositoryInterface } from "./interfaces/repository.interface";
 export { RegionEnum } from "./interfaces/region.enum";
 export { webServer } from "./http/web-server";
 export { validate } from "./validation/validate";
