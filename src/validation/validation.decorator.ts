@@ -18,7 +18,7 @@ export function ValidateFuncArgs(validator): Function {
 				throw new ValidationError(result, result.message);
 			}
 
-			method.apply(this, arguments);
+			return method.apply(this, arguments);
 		};
 	};
 }

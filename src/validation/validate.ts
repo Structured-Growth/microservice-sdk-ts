@@ -31,7 +31,7 @@ export function validate(
 	return omitBy(
 		{
 			valid: !error,
-			message: error.message,
+			message: error?.message,
 			errors: size(errors) ? errors : undefined,
 		},
 		isUndefined
