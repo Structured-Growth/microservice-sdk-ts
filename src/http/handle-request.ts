@@ -29,7 +29,6 @@ export function handleRequest(
 			try {
 				controller.init(req, res);
 				result = await controller[method]?.call(controller, ...Object.values(params), query, body);
-				res.status(200);
 				res.json(result);
 				options.logResponses && (msg += " " + JSON.stringify(result));
 			} catch (e) {
