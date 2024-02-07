@@ -5,7 +5,12 @@ export interface RepositoryInterface<TModel, TSearchParams, TCreateParams> {
 
 	create(params: TCreateParams): Promise<TModel>;
 
-	read(id: number): Promise<TModel | null>;
+	read(
+		id: number,
+		params?: {
+			attributes?: string[];
+		}
+	): Promise<TModel | null>;
 
 	update(id: number, params: Partial<TCreateParams>): Promise<TModel>;
 
