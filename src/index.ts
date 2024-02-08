@@ -28,6 +28,7 @@ export { RepositoryInterface } from "./interfaces/repository.interface";
 export { RegionEnum } from "./interfaces/region.enum";
 export { webServer } from "./http/web-server";
 export { validate } from "./validation/validate";
+export * from "./validation/validators";
 import * as joi from "joi";
 
 export { joi };
