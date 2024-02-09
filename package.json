@@ -22,7 +22,7 @@
     "readme.md"
   ],
   "exports": {
-    ".": "./.dist",
+    ".": "./.dist/index",
     "./codegen": "./.dist/codegen",
     "./common": "./.dist/common",
     "./container": "./.dist/container/index.js",
