@@ -21,15 +21,15 @@ export class SagaOrchestrator {
 
 	constructor(@injectWithTransform("Logger", LoggerTransform, { module: "Saga" }) private logger?: LoggerInterface) {}
 
-	setInput(input: any) {
+	public setInput(input: any) {
 		this.input = input;
 	}
 
-	addStep(step: SagaStep) {
+	public addStep(step: SagaStep) {
 		this.steps.push(step);
 	}
 
-	async execute() {
+	public async execute() {
 		for (const step of this.steps) {
 			try {
 				await this.executeStep(step);
@@ -39,6 +39,8 @@ export class SagaOrchestrator {
 				throw error;
 			}
 		}
+
+		return this.input;
 	}
 
 	private async executeStep(step: SagaStep) {
@@ -46,7 +48,10 @@ export class SagaOrchestrator {
 		for (let retry = 1; retry <= maxRetires; retry++) {
 			this.logger.info(`Executing ${step.constructor.name} step... Attempt ${retry} of ${maxRetires}`);
 			try {
-				this.input = await step.execute(this.input);
+				const result = await step.execute(this.input);
+				if (result) {
+					this.input = result;
+				}
 				this.executedSteps.push(step);
 				break;
 			} catch (e) {
