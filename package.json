@@ -21,6 +21,10 @@
     ".dist",
     "readme.md"
   ],
+  "exports": {
+    ".": "./.dist",
+    "./": "./.dist/"
+  },
   "dependencies": {
     "aws-sdk": "^2.1536.0",
     "body-parser": "^1.20.2",
