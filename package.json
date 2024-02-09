@@ -25,14 +25,14 @@
     ".": "./.dist",
     "./codegen": "./.dist/codegen",
     "./common": "./.dist/common",
-    "./container": "./.dist/container",
+    "./container": "./.dist/container/index.js",
     "./decorators": "./.dist/decorators",
     "./eventhub": "./.dist/eventhub",
     "./http": "./.dist/http",
     "./interfaces": "./.dist/interfaces",
-    "./logger": "./.dist/logger",
-    "./saga": "./.dist/saga",
-    "./validation": "./.dist/validation"
+    "./logger": "./.dist/logger/index.js",
+    "./saga": "./.dist/saga/index.js",
+    "./validation": "./.dist/validation/index.js"
   },
   "dependencies": {
     "aws-sdk": "^2.1536.0",
