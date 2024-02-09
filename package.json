@@ -23,7 +23,16 @@
   ],
   "exports": {
     ".": "./.dist",
-    "./": "./.dist/"
+    "./codegen": "./.dist/codegen",
+    "./common": "./.dist/common",
+    "./container": "./.dist/container",
+    "./decorators": "./.dist/decorators",
+    "./eventhub": "./.dist/eventhub",
+    "./http": "./.dist/http",
+    "./interfaces": "./.dist/interfaces",
+    "./logger": "./.dist/logger",
+    "./saga": "./.dist/saga",
+    "./validation": "./.dist/validation"
   },
   "dependencies": {
     "aws-sdk": "^2.1536.0",
