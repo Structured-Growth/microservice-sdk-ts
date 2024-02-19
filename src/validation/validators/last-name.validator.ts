@@ -7,6 +7,5 @@ export const LastNameValidator = joi
 	.regex(/^[a-zA-Z0-9\']*$/)
 	.label("Last name")
 	.messages({
-		"string.pattern.base":
-			"Last name must consist of letters",
+		"string.pattern.base": "Last name must consist of letters",
 	});
