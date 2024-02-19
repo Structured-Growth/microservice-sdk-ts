@@ -4,7 +4,7 @@
   "description": "",
   "main": ".dist/index",
   "scripts": {
-    "build": "tsc",
+    "build": "tsc --project tsconfig.build.json",
     "dev": "tsc --watch",
     "test": "ts-node test/test.ts"
   },
