@@ -1,4 +1,4 @@
-import {autoInjectable, inject} from "tsyringe";
+import { autoInjectable, inject } from "tsyringe";
 import { LoggerInterface } from "../logger/interfaces/logger.interface";
 import { EmailTransportInterface } from "./intrefaces/email-transport.interface";
 

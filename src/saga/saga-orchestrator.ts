@@ -2,10 +2,10 @@ import { autoInjectable, injectWithTransform } from "tsyringe";
 import { LoggerInterface } from "../logger/interfaces/logger.interface";
 import { LoggerTransform } from "../logger/log-context.transform";
 
-export interface SagaStep {
+export interface SagaStep<TInputObject> {
 	maxRetries: number;
 
-	execute(input: object): Promise<object>;
+	execute(input: TInputObject): Promise<TInputObject>;
 
 	compensate(): Promise<void>;
 }
@@ -14,18 +14,18 @@ export interface SagaStep {
  * Implementation of Saga pattern for distributed transactions
  */
 @autoInjectable()
-export class SagaOrchestrator {
-	private steps: SagaStep[] = [];
-	private executedSteps: SagaStep[] = [];
-	private input: object = {};
+export class SagaOrchestrator<TInputObject = object> {
+	private steps: SagaStep<TInputObject>[] = [];
+	private executedSteps: SagaStep<TInputObject>[] = [];
+	private input: TInputObject;
 
 	constructor(@injectWithTransform("Logger", LoggerTransform, { module: "Saga" }) private logger?: LoggerInterface) {}
 
-	public setInput(input: any) {
+	public setInput(input: TInputObject) {
 		this.input = input;
 	}
 
-	public addStep(step: SagaStep) {
+	public addStep(step: SagaStep<TInputObject>) {
 		this.steps.push(step);
 	}
 
@@ -43,7 +43,7 @@ export class SagaOrchestrator {
 		return this.input;
 	}
 
-	private async executeStep(step: SagaStep) {
+	private async executeStep(step: SagaStep<TInputObject>) {
 		const maxRetires = step.maxRetries || 1;
 		for (let retry = 1; retry <= maxRetires; retry++) {
 			this.logger.info(`Executing ${step.constructor.name} step... Attempt ${retry} of ${maxRetires}`);
@@ -69,7 +69,7 @@ export class SagaOrchestrator {
 		}
 	}
 
-	private async compensateStep(step: SagaStep) {
+	private async compensateStep(step: SagaStep<TInputObject>) {
 		const maxRetires = step.maxRetries || 1;
 		for (let retry = 1; retry <= maxRetires; retry++) {
 			this.logger.info(`Compensating step ${step.constructor.name}... Attempt ${retry} of ${maxRetires}`);

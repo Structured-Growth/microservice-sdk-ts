@@ -8,6 +8,5 @@ export const FirstNameValidator = joi
 	.regex(/^[a-zA-Z0-9\']*$/)
 	.label("First name")
 	.messages({
-		"string.pattern.base":
-			"First name must consist of letters",
+		"string.pattern.base": "First name must consist of letters",
 	});

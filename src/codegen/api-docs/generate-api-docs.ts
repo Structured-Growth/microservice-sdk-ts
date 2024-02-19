@@ -11,7 +11,7 @@ export async function generateApiDocs(app, controllers, appPrefix, specOptions: 
 	let metadata = await generateSpec(specOptions);
 	metadata.referenceTypeMap = {
 		...metadata.referenceTypeMap,
-		...schemas as any,
+		...(schemas as any),
 	};
 
 	metadata.controllers.forEach((controller) => {
