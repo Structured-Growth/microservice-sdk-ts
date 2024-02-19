@@ -32,13 +32,15 @@
     "./interfaces": "./.dist/interfaces",
     "./logger": "./.dist/logger/index.js",
     "./saga": "./.dist/saga/index.js",
-    "./validation": "./.dist/validation/index.js"
+    "./validation": "./.dist/validation/index.js",
+    "./mailer": "./.dist/mailer/index.js",
+    "./key-value": "./.dist/key-value/index.js"
   },
   "dependencies": {
-    "aws-sdk": "^2.1536.0",
+    "aws-sdk": "^2.1560.0",
     "body-parser": "^1.20.2",
     "cors": "^2.8.5",
-    "dotenv": "^16.3.1",
+    "dotenv": "^16.4.4",
     "express": "^4.18.2",
     "hyperid": "^3.1.1",
     "joi": "^17.11.1",
@@ -54,11 +56,14 @@
   "devDependencies": {
     "@commitlint/cli": "^18.4.4",
     "@commitlint/config-conventional": "^18.4.4",
+    "@types/chai": "^4.3.11",
     "@types/cors": "^2.8.17",
     "@types/express": "^4.17.21",
     "@types/joi": "^17.2.3",
     "@types/lodash": "^4.14.202",
+    "@types/mocha": "^10.0.6",
     "@types/uuid": "^9.0.7",
+    "chai": "4.4.1",
     "husky": "^8.0.3",
     "mocha": "^10.2.0",
     "prettier": "^2.8.8",

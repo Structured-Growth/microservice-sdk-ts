@@ -9,12 +9,14 @@
     "allowSyntheticDefaultImports": true,
     "sourceMap": true,
     "declaration": true,
+    "allowJs": true,
     "lib": [
       "ES2021"
     ]
   },
   "include": [
-    "src"
+    "src",
+    "test"
   ],
   "exclude": [
     "node_modules"
