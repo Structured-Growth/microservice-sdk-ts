@@ -7,12 +7,13 @@
 - Http request handler with tracing;
 - Base controller;
 - Universal database connector streamlined for using inside Lambda environment;
+- Mailer service;
+- Key-Value storage service;
+- Saga orchestrator (Saga pattern for distributed transactions);
 
 ## Roadmap
 
-- [ ] Generic validators
-- [x] Generic interfaces
-- [ ] Cross-app communicator
+...
 
 ## Development
 
