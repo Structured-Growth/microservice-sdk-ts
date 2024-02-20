@@ -31,7 +31,7 @@ export class DynamoDbKvStorageDriver implements KeyValueStorageDriverInterface {
 				Item: {
 					key: { S: key },
 					value: { S: value },
-					expiresAt: { S: expirationDate.toISOString() },
+					expiresAt: { N: Math.floor(expirationDate.getTime() / 1000).toString() },
 				},
 			})
 			.promise();
