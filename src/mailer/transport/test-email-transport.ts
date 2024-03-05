@@ -18,5 +18,6 @@ export class TestEmailTransport implements EmailTransportInterface {
 		text?: string;
 	}): Promise<boolean> {
 		this.logger.debug(`Sending email: `, params);
+		return true;
 	}
 }
