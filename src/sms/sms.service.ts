@@ -1,4 +1,4 @@
-import {inject, injectable} from "tsyringe";
+import { inject, injectable } from "tsyringe";
 import { SmsProviderInterface } from "./interfaces/sms-provider.interface";
 
 @injectable()
