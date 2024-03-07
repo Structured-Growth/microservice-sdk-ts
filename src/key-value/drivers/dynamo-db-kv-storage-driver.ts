@@ -15,7 +15,8 @@ export class DynamoDbKvStorageDriver implements KeyValueStorageDriverInterface {
 		private logger: LoggerInterface,
 		@inject("region") private region: string
 	) {
-		this.tableName = "key-value-storage-test";
+		const stage = process.env.STAGE || "dev";
+		this.tableName = `key-value-storage-${stage}`;
 		this.client = new Dynamodb({
 			apiVersion: "2012-08-10",
 			region: this.region,
