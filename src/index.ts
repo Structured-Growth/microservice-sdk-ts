@@ -29,6 +29,21 @@ export { RegionEnum } from "./interfaces/region.enum";
 export { webServer } from "./http/web-server";
 export { validate } from "./validation/validate";
 export { SagaStep, SagaOrchestrator } from "./saga/saga-orchestrator";
+
+export { keyValueStorageDrivers, DynamoDbKvStorageDriver } from "./key-value/drivers";
+export { KeyValueStorage } from "./key-value/key-value-storage";
+export { KeyValueStorageDriverInterface } from "./key-value/interfaces/key-value-storage-driver.interface";
+export { KeyValueStorageInterface } from "./key-value/interfaces/key-value-storage.interface";
+export { ValueInterface } from "./key-value/interfaces/value.interface";
+
+export { Mailer } from "./mailer/mailer";
+export { SesEmailTransport } from "./mailer/transport/ses-email-transport";
+export { emailTransports } from "./mailer/transport";
+
+export { smsProviders, SnsSmsProvider } from "./sms/providers";
+export { SmsService } from "./sms/sms.service";
+export { SmsProviderInterface } from "./sms/interfaces/sms-provider.interface";
+
 export * from "./validation/validators";
 import * as joi from "joi";
 
