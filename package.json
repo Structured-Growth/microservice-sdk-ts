@@ -29,7 +29,7 @@
     "./decorators": "./.dist/decorators",
     "./eventhub": "./.dist/eventhub",
     "./http": "./.dist/http",
-    "./interfaces": "./.dist/interfaces",
+    "./interfaces": "./.dist/interfaces/index.js",
     "./logger": "./.dist/logger/index.js",
     "./saga": "./.dist/saga/index.js",
     "./validation": "./.dist/validation/index.js",
