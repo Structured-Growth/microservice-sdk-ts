@@ -1,4 +1,4 @@
-import { ErrorInterface } from "../../interfaces/errors/error.interface";
+import { ErrorInterface } from "../../interfaces";
 
 export class NotFoundError extends Error implements ErrorInterface {
 	public code = 404;

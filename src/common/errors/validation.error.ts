@@ -1,4 +1,4 @@
-import { ValidationErrorInterface } from "../../interfaces/errors/validation-error.interface";
+import { ValidationErrorInterface } from "../../interfaces";
 
 export class ValidationError extends Error implements ValidationErrorInterface {
 	public code = 422;
