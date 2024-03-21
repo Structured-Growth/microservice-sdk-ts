@@ -44,6 +44,16 @@ export { smsProviders, SnsSmsProvider } from "./sms/providers";
 export { SmsService } from "./sms/sms.service";
 export { SmsProviderInterface } from "./sms/interfaces/sms-provider.interface";
 
+export { eventBusProviders, TestEventbusProvider, AwsEventBridgeEventbusProvider } from "./eventbus/providers/index";
+export { EventbusService } from "./eventbus/eventbus.service";
+export { EventbusInterface } from "./eventbus/interfaces/eventbus.interface";
+export { EventbusProviderInterface } from "./eventbus/interfaces/eventbus-provider.interface";
+
+export { queueProviders, TestQueueProvider, AwsSqsQueueProvider } from "./queue/providers/index";
+export { QueueService } from "./queue/queue.service";
+export { QueueInterface } from "./queue/interfaces/queue.interface";
+export { QueueProviderInterface } from "./queue/interfaces/queue-provider.interface";
+
 export * from "./validation/validators";
 import * as joi from "joi";
 
