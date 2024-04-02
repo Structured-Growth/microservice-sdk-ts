@@ -4,7 +4,7 @@ import { EventInterface } from "../event.interface";
 export interface EventSingUpDataInterface {
 	orgId: number;
 	accountId: number;
-	accountArn: number;
+	accountArn: string;
 	firstName: string;
 	lastName: string;
 	email: string;
