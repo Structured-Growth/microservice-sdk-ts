@@ -43,7 +43,14 @@ export class AwsSqsQueueProvider implements QueueProviderInterface {
 
 	public subscribe(
 		queueName: string,
-		handler: (message: { source: string; subject: string; message: object }, event: Message) => Promise<void> | void
+		handler: (
+			message: {
+				source: string;
+				subject: string;
+				message: object;
+			},
+			event?: Message
+		) => Promise<void> | void
 	): void {
 		const consumer = Consumer.create({
 			region: this.region,
