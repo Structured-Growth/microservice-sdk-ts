@@ -9,4 +9,3 @@ export { BelongsToOrgInterface } from "./belongs-to-org.interface";
 export { DefaultModelInterface } from "./default-model.interface";
 export { RepositoryInterface } from "./repository.interface";
 export { RegionEnum } from "./region.enum";
-
