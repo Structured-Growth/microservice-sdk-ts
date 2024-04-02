@@ -1,3 +1,3 @@
-import { EventbusInterface } from "./eventbus.interface";
-
-export interface EventbusProviderInterface extends EventbusInterface {}
+export interface EventbusProviderInterface {
+	publish(subject: string, message: object): Promise<boolean>;
+}

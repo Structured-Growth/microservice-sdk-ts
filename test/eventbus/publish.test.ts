@@ -2,7 +2,7 @@ import "reflect-metadata";
 import { config } from "dotenv";
 import { assert } from "chai";
 import { container, Lifecycle } from "tsyringe";
-import { logWriters, Logger } from "../../src";
+import { EventTest, Logger, logWriters, RegionEnum } from "../../src";
 import { EventbusInterface, eventBusProviders, EventbusService } from "../../src/eventbus";
 
 config({ path: ".env" });
@@ -22,7 +22,11 @@ describe("Publish event", () => {
 	});
 
 	it("Must publish event", async () => {
-		const result = await eventbus.publish("test", { test: "ok" });
+		const result = await eventbus.publish(
+			new EventTest("test", 1, RegionEnum.US, 1, {
+				test: "ok",
+			})
+		);
 		assert.equal(result, true);
 	});
 });

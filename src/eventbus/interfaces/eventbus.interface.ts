@@ -1,6 +1,8 @@
+import { EventInterface } from "../../events";
+
 export interface EventbusInterface {
 	/**
 	 * Publish a message
 	 */
-	publish(subject: string, message: object): Promise<boolean>;
+	publish(event: EventInterface): Promise<boolean>;
 }

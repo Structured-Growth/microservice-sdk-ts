@@ -54,6 +54,8 @@ export { QueueService } from "./queue/queue.service";
 export { QueueInterface } from "./queue/interfaces/queue.interface";
 export { QueueProviderInterface } from "./queue/interfaces/queue-provider.interface";
 
+export * from "./events";
+
 export * from "./validation/validators";
 import * as joi from "joi";
 

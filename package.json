@@ -28,6 +28,7 @@
     "./container": "./.dist/container/index.js",
     "./decorators": "./.dist/decorators",
     "./eventbus": "./.dist/eventbus/index.js",
+    "./events": "./.dist/events/index.js",
     "./http": "./.dist/http",
     "./queue": "./.dist/queue/index.js",
     "./interfaces": "./.dist/interfaces/index.js",
