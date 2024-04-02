@@ -5,6 +5,7 @@ import { Consumer } from "sqs-consumer";
 import { LoggerInterface } from "../../logger/interfaces/logger.interface";
 import { ServerError } from "../../common/errors/server.error";
 import { LoggerTransform } from "../../logger/log-context.transform";
+import { Message } from "aws-sdk/clients/sqs";
 
 @injectable()
 export class AwsSqsQueueProvider implements QueueProviderInterface {
@@ -42,7 +43,7 @@ export class AwsSqsQueueProvider implements QueueProviderInterface {
 
 	public subscribe(
 		queueName: string,
-		handler: (message: { source: string; subject: string; message: object }) => Promise<void> | void
+		handler: (message: { source: string; subject: string; message: object }, event: Message) => Promise<void> | void
 	): void {
 		const consumer = Consumer.create({
 			region: this.region,
@@ -52,18 +53,24 @@ export class AwsSqsQueueProvider implements QueueProviderInterface {
 				const { Type, source, ...event } = JSON.parse(message.Body);
 				// handle SNS notifications
 				if (Type === "Notification") {
-					handler({
-						source: "sns.amazonaws.com",
-						subject: "notification",
-						message: JSON.parse(event["Message"]),
-					});
+					handler(
+						{
+							source: "sns.amazonaws.com",
+							subject: "notification",
+							message: JSON.parse(event["Message"]),
+						},
+						message
+					);
 					// handle EventBridge events
 				} else {
-					handler({
-						source,
-						subject: event["detail-type"],
-						message: event["detail"],
-					});
+					handler(
+						{
+							source,
+							subject: event["detail-type"],
+							message: event["detail"],
+						},
+						message
+					);
 				}
 			},
 		});
