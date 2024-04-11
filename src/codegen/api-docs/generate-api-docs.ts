@@ -8,7 +8,7 @@ import { schemas } from "./schemas";
  * Automatically adds information for policies (action, resource ARNs) and common error responses.
  */
 export async function generateApiDocs(app, controllers, appPrefix, specOptions: ExtendedSpecConfig) {
-	let metadata = await generateSpec(specOptions);
+	let metadata = await generateSpec(specOptions, null, null, null, "integer");
 	metadata.referenceTypeMap = {
 		...metadata.referenceTypeMap,
 		...(schemas as any),
@@ -41,5 +41,5 @@ export async function generateApiDocs(app, controllers, appPrefix, specOptions: 
 			}
 		});
 	});
-	await generateSpec(specOptions, null, null, metadata);
+	await generateSpec(specOptions, null, null, metadata, "integer");
 }
