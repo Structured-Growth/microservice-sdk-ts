@@ -4,6 +4,7 @@ import { container } from "tsyringe";
 import { EventbusService } from "../eventbus";
 
 export abstract class BaseController {
+	protected appPrefix: string;
 	protected logger: LoggerInterface;
 	protected request: Request;
 	protected response: Response;
@@ -11,6 +12,7 @@ export abstract class BaseController {
 	protected principal: { arn: string } = { arn: "*" }; // todo fix after policies implemented
 
 	constructor() {
+		this.appPrefix = container.resolve<string>("appPrefix");
 		this.logger = container.resolve<LoggerInterface>("Logger");
 		this.logger.module = this.constructor.name || "Controller";
 		this.eventBus = container.resolve<EventbusService>("EventbusService");
