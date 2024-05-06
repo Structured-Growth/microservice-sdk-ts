@@ -1,5 +1,5 @@
 import { EventInterface } from "../event.interface";
-import { autoInjectable, inject } from "tsyringe";
+import { container } from "tsyringe";
 
 export interface EventMutationDataInterface {
 	principalArn: string;
@@ -8,15 +8,17 @@ export interface EventMutationDataInterface {
 	changes: string;
 }
 
-@autoInjectable()
 export class EventMutation implements EventInterface {
+	private readonly appPrefix: string;
+
 	constructor(
 		private principalArn: string,
 		private resourceArn: string,
 		private action: string,
-		private changes: string,
-		@inject("appPrefix") private appPrefix?: string
-	) {}
+		private changes: string
+	) {
+		this.appPrefix = container.resolve("appPrefix");
+	}
 
 	get arn() {
 		return `${this.appPrefix}:-:-:-:events/mutation`;
