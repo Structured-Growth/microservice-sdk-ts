@@ -8,6 +8,7 @@ export abstract class BaseController {
 	protected request: Request;
 	protected response: Response;
 	protected eventBus: EventbusService;
+	protected principal: { arn: string } = { arn: "*" }; // todo fix after policies implemented
 
 	constructor() {
 		this.logger = container.resolve<LoggerInterface>("Logger");
