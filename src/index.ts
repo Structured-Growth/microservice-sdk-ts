@@ -14,6 +14,9 @@ export { DescribeResource } from "./decorators/describe-resource";
 export { ValidateFuncArgs } from "./validation/validation.decorator";
 export { NotFoundError } from "./common/errors/not-found.error";
 export { ValidationError } from "./common/errors/validation.error";
+export { BadRequestError } from "./common/errors/bad-request.error";
+export { UnauthorizedError } from "./common/errors/unauthorized.error";
+export { ForbiddenError } from "./common/errors/forbidden.error";
 export { LoggerInterface } from "./logger/interfaces/logger.interface";
 export { ErrorInterface } from "./interfaces/errors/error.interface";
 export { ValidationErrorInterface } from "./interfaces/errors/validation-error.interface";
@@ -55,6 +58,7 @@ export { QueueInterface } from "./queue/interfaces/queue.interface";
 export { QueueProviderInterface } from "./queue/interfaces/queue-provider.interface";
 
 export * from "./events";
+export * from "./auth";
 
 export * from "./validation/validators";
 import * as joi from "joi";
