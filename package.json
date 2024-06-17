@@ -37,7 +37,8 @@
     "./validation": "./.dist/validation/index.js",
     "./mailer": "./.dist/mailer/index.js",
     "./sms": "./.dist/sms/index.js",
-    "./key-value": "./.dist/key-value/index.js"
+    "./key-value": "./.dist/key-value/index.js",
+    "./auth": "./.dist/auth/index.js"
   },
   "dependencies": {
     "aws-sdk": "^2.1560.0",
