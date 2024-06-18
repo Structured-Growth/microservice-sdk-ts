@@ -1,7 +1,7 @@
 import { container } from "tsyringe";
 import { Request, Response } from "express";
 import * as hyperid from "hyperid";
-import { Logger } from "../logger/logger";
+import { Logger } from "../logger";
 import { asyncLocalStorage } from "../common/async-local-storage";
 import { ValidationError } from "../common/errors/validation.error";
 

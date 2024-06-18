@@ -4,7 +4,8 @@ import { container } from "tsyringe";
 import { EventbusService } from "../eventbus";
 import { AuthenticatedAccountInterface, AuthServiceInterface, GuestPrincipalInterface } from "../auth";
 import { ServerError } from "../common/errors/server.error";
-import { filter, isUndefined } from "lodash";
+import { PolicyService } from "../auth/policy.service";
+import { ForbiddenError } from "../common/errors/forbidden.error";
 
 export abstract class BaseController {
 	protected app: any;
@@ -14,6 +15,7 @@ export abstract class BaseController {
 	protected response: Response;
 	protected eventBus: EventbusService;
 	protected authService: AuthServiceInterface;
+	protected policyService: PolicyService;
 	protected principal: AuthenticatedAccountInterface | GuestPrincipalInterface;
 
 	constructor() {
@@ -23,6 +25,7 @@ export abstract class BaseController {
 		this.logger.module = this.constructor.name || "Controller";
 		this.eventBus = container.resolve<EventbusService>("EventbusService");
 		this.authService = container.resolve<AuthServiceInterface>("AuthService");
+		this.policyService = container.resolve<PolicyService>("PolicyService");
 	}
 
 	public init(request: Request, response: Response) {
@@ -47,7 +50,12 @@ export abstract class BaseController {
 		}
 	}
 
-	public async authorize(actionName: string) {
+	/**
+	 * Check if principal is authorized to perform an action on resources.
+	 *
+	 * @throws ForbiddenError if principal is not authorized
+	 */
+	public async authorize(actionName: string): Promise<void> {
 		if (!this.app || !this.app.models) {
 			throw new ServerError("App is not initialized");
 		}
@@ -59,31 +67,37 @@ export abstract class BaseController {
 			throw new ServerError("Action is not described. Use DescribeAction decorator.");
 		}
 
-		const resources = await Promise.all(
-			action.resources.map(async ({ resource, resolver }) => {
-				const modelClass: any = this.app.models[resource];
-				const id = resolver(this.request);
-				this.logger.debug("Resolved resource ID", resource, id || "not resolved");
-				if (!id) {
-					return;
-				}
-				const model = await modelClass.findOne({
-					where: {
-						id,
-					},
-					rejectOnEmpty: false,
-				});
+		const resources = (
+			await Promise.all(
+				action.resources.map(async ({ resource, resolver }) => {
+					const modelClass: any = this.app.models[resource];
+					const id = resolver(this.request);
+					this.logger.debug("Resolved resource ID", resource, id || "not resolved");
 
-				this.logger.debug("Resolved ARN", model?.arn || "not resolved");
+					if (!id) {
+						return;
+					}
 
-				return model?.arn;
-			})
-		);
+					const model = await modelClass.findOne({
+						where: { id },
+						rejectOnEmpty: false,
+					});
+					this.logger.debug("Resolved ARN", model?.arn || "not resolved");
 
-		console.log("Auth request", {
-			principal: this.principal.arn,
-			action: `${this.appPrefix}:${action.action}`,
-			resources: filter(resources, isUndefined),
-		});
+					return model?.arn;
+				})
+			)
+		).filter((el) => !!el);
+
+		const actionArn = `${this.appPrefix}:${action.action}`;
+		const { effect } = await this.policyService.check(this.principal.arn, actionArn, resources);
+
+		if (effect !== "allow") {
+			new ForbiddenError(
+				`Principal ${this.principal.arn} is not authorized to perform action ${actionArn} on resource ${resources.join(
+					", "
+				)}`
+			);
+		}
 	}
 }
