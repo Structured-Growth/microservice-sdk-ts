@@ -54,6 +54,11 @@ export abstract class BaseController {
 
 		const prototype = Object.getPrototypeOf(this);
 		const action = Reflect.getMetadata(`__action:${actionName}`, prototype);
+
+		if (!action) {
+			throw new ServerError("Action is not described. Use DescribeAction decorator.");
+		}
+
 		const resources = await Promise.all(
 			action.resources.map(async ({ resource, resolver }) => {
 				const modelClass: any = this.app.models[resource];
