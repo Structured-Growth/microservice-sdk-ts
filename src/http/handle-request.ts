@@ -16,6 +16,8 @@ export function handleRequest(
 	} = {}
 ) {
 	const controller = new controllerClass();
+	const authenticationEnabled = container.resolve<boolean>("authenticationEnabled");
+	const authorizationEnabled = container.resolve<boolean>("authorizationEnabled");
 	const logger = container.resolve<Logger>("Logger");
 	logger.module = "Http";
 
@@ -28,8 +30,14 @@ export function handleRequest(
 
 			try {
 				controller.init(req, res);
-				await controller.authenticate();
-				await controller.authorize(method);
+				// authenticate principal via OAuth Server
+				if (authenticationEnabled === true && controller.authenticationEnabled) {
+					await controller.authenticate();
+				}
+				// authorize principal via Policies Service
+				if (authorizationEnabled === true && controller.authorizationEnabled) {
+					await controller.authorize(method);
+				}
 				result = await controller[method]?.call(controller, ...Object.values(params), query, body);
 				res.json(result);
 				options.logResponses && (msg += " " + JSON.stringify(result));

@@ -4,10 +4,12 @@ import { container } from "tsyringe";
 import { EventbusService } from "../eventbus";
 import { AuthenticatedAccountInterface, AuthServiceInterface, GuestPrincipalInterface } from "../auth";
 import { ServerError } from "../common/errors/server.error";
-import { PolicyService } from "../auth/policy.service";
+import { PolicyService } from "../auth";
 import { ForbiddenError } from "../common/errors/forbidden.error";
 
 export abstract class BaseController {
+	public authenticationEnabled = true;
+	public authorizationEnabled = true;
 	protected app: any;
 	protected appPrefix: string;
 	protected logger: LoggerInterface;
