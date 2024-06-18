@@ -3,18 +3,12 @@ import { AuthenticatedAccountInterface } from "./interfaces/authenticated-accoun
 import { ServerError } from "../common/errors/server.error";
 import { BadRequestError } from "../common/errors/bad-request.error";
 import { UnauthorizedError } from "../common/errors/unauthorized.error";
+import { AuthServiceInterface } from "./interfaces/auth-service.interface";
 
 @injectable()
-export class AuthService {
+export class AuthService implements AuthServiceInterface {
 	constructor(@inject("oAuthServiceGetUserUrl") private oAuthServiceGetUserUrl: string) {}
 
-	/**
-	 * Get authenticated user by JWT access token. This method calls OAuth server in order to
-	 * validate access token and retrieve user info.
-	 *
-	 * @throws UnauthorizedError if token is invalid or expired
-	 * @throws ServerError if the server responded incorrectly
-	 */
 	public async getAuthenticatedUser(accessToken: string): Promise<AuthenticatedAccountInterface> {
 		if (!this.oAuthServiceGetUserUrl) {
 			throw new ServerError(`oAuthServiceGetUserUrl is not set`);

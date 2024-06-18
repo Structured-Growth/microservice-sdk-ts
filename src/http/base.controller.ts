@@ -2,8 +2,7 @@ import { Request, Response } from "express";
 import { LoggerInterface } from "../logger/interfaces/logger.interface";
 import { container } from "tsyringe";
 import { EventbusService } from "../eventbus";
-import { AuthenticatedAccountInterface, AuthService } from "../auth";
-import { GuestPrincipalInterface } from "../auth/interfaces/guest-principal.interface";
+import { AuthenticatedAccountInterface, AuthService, GuestPrincipalInterface } from "../auth";
 
 export abstract class BaseController {
 	protected appPrefix: string;
