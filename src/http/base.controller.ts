@@ -31,8 +31,9 @@ export abstract class BaseController {
 	 */
 	public async authenticate() {
 		try {
-			const authHeader: string = this.request?.headers["Authorization"]?.toString() || "";
-			const token = authHeader.substring(7);
+			const headers = this.request?.headers;
+			const authHeader: string = headers?.["Authorization"]?.toString() || headers?.["authorization"]?.toString() || "";
+			const token = authHeader.substring(7); // remove "Bearer "
 			this.principal = await this.authService.getAuthenticatedUser(token);
 		} catch (e) {
 			this.logger.info(`Authentication failed: ${e.message}`);
