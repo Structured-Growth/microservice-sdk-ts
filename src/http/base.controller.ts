@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { LoggerInterface } from "../logger/interfaces/logger.interface";
 import { container } from "tsyringe";
 import { EventbusService } from "../eventbus";
-import { AuthenticatedAccountInterface, AuthService, GuestPrincipalInterface } from "../auth";
+import { AuthenticatedAccountInterface, AuthServiceInterface, GuestPrincipalInterface } from "../auth";
 
 export abstract class BaseController {
 	protected appPrefix: string;
@@ -10,7 +10,7 @@ export abstract class BaseController {
 	protected request: Request;
 	protected response: Response;
 	protected eventBus: EventbusService;
-	protected authService: AuthService;
+	protected authService: AuthServiceInterface;
 	protected principal: AuthenticatedAccountInterface | GuestPrincipalInterface;
 
 	constructor() {
@@ -18,7 +18,7 @@ export abstract class BaseController {
 		this.logger = container.resolve<LoggerInterface>("Logger");
 		this.logger.module = this.constructor.name || "Controller";
 		this.eventBus = container.resolve<EventbusService>("EventbusService");
-		this.authService = container.resolve<AuthService>("AuthService");
+		this.authService = container.resolve<AuthServiceInterface>("AuthService");
 	}
 
 	public init(request: Request, response: Response) {
