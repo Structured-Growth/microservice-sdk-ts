@@ -36,6 +36,7 @@ export abstract class BaseController {
 			const token = authHeader.substring(7);
 			this.principal = await this.authService.getAuthenticatedUser(token);
 		} catch (e) {
+			this.logger.info(`Authentication failed: ${e.message}`);
 			this.principal = {
 				arn: "*",
 			};

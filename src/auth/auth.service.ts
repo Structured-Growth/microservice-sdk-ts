@@ -21,7 +21,7 @@ export class AuthService {
 		}
 
 		if (!accessToken) {
-			throw new BadRequestError(`accessToken is required`);
+			throw new BadRequestError(`Access token was not provided`);
 		}
 
 		const result = await fetch(this.oAuthServiceGetUserUrl, {
