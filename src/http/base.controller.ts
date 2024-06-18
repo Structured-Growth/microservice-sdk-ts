@@ -2,6 +2,8 @@ import { Request, Response } from "express";
 import { LoggerInterface } from "../logger/interfaces/logger.interface";
 import { container } from "tsyringe";
 import { EventbusService } from "../eventbus";
+import { AuthenticatedAccountInterface, AuthService } from "../auth";
+import { GuestPrincipalInterface } from "../auth/interfaces/guest-principal.interface";
 
 export abstract class BaseController {
 	protected appPrefix: string;
@@ -9,17 +11,34 @@ export abstract class BaseController {
 	protected request: Request;
 	protected response: Response;
 	protected eventBus: EventbusService;
-	protected principal: { arn: string } = { arn: "*" }; // todo fix after policies implemented
+	protected authService: AuthService;
+	protected principal: AuthenticatedAccountInterface | GuestPrincipalInterface;
 
 	constructor() {
 		this.appPrefix = container.resolve<string>("appPrefix");
 		this.logger = container.resolve<LoggerInterface>("Logger");
 		this.logger.module = this.constructor.name || "Controller";
 		this.eventBus = container.resolve<EventbusService>("EventbusService");
+		this.authService = container.resolve<AuthService>("AuthService");
 	}
 
 	public init(request: Request, response: Response) {
 		this.request = request;
 		this.response = response;
+	}
+
+	/**
+	 * Try to get user info by access token from the request.
+	 */
+	public async authenticate() {
+		try {
+			const authHeader: string = this.request?.headers["Authorization"]?.toString() || "";
+			const token = authHeader.substring(7);
+			this.principal = await this.authService.getAuthenticatedUser(token);
+		} catch (e) {
+			this.principal = {
+				arn: "*",
+			};
+		}
 	}
 }
