@@ -47,17 +47,18 @@ export abstract class BaseController {
 		}
 	}
 
-	public async authorize() {
+	public async authorize(actionName: string) {
 		if (!this.app || !this.app.models) {
 			throw new ServerError("App is not initialized");
 		}
 
 		const prototype = Object.getPrototypeOf(this);
-		const action = Reflect.getMetadata(`__action:get`, prototype);
+		const action = Reflect.getMetadata(`__action:${actionName}`, prototype);
 		const resources = await Promise.all(
 			action.resources.map(async ({ resource, resolver }) => {
 				const modelClass: any = this.app.models[resource];
 				const id = resolver(this.request);
+				this.logger.debug("Resolved resource ID", resource, id || "not resolved");
 				if (!id) {
 					return;
 				}
@@ -67,6 +68,9 @@ export abstract class BaseController {
 					},
 					rejectOnEmpty: false,
 				});
+
+				this.logger.debug("Resolved ARN", model?.arn || "not resolved");
+
 				return model?.arn;
 			})
 		);
