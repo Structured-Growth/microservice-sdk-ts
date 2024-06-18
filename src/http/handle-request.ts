@@ -29,6 +29,7 @@ export function handleRequest(
 			try {
 				controller.init(req, res);
 				await controller.authenticate();
+				await controller.authorize();
 				result = await controller[method]?.call(controller, ...Object.values(params), query, body);
 				res.json(result);
 				options.logResponses && (msg += " " + JSON.stringify(result));

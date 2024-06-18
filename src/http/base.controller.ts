@@ -3,8 +3,10 @@ import { LoggerInterface } from "../logger/interfaces/logger.interface";
 import { container } from "tsyringe";
 import { EventbusService } from "../eventbus";
 import { AuthenticatedAccountInterface, AuthServiceInterface, GuestPrincipalInterface } from "../auth";
+import { ServerError } from "../common/errors/server.error";
 
 export abstract class BaseController {
+	protected app: any;
 	protected appPrefix: string;
 	protected logger: LoggerInterface;
 	protected request: Request;
@@ -14,6 +16,7 @@ export abstract class BaseController {
 	protected principal: AuthenticatedAccountInterface | GuestPrincipalInterface;
 
 	constructor() {
+		this.app = container.resolve<string>("app");
 		this.appPrefix = container.resolve<string>("appPrefix");
 		this.logger = container.resolve<LoggerInterface>("Logger");
 		this.logger.module = this.constructor.name || "Controller";
@@ -41,5 +44,32 @@ export abstract class BaseController {
 				arn: "*",
 			};
 		}
+	}
+
+	public async authorize() {
+		if (!this.app || !this.app.models) {
+			throw new ServerError("App is not initialized");
+		}
+
+		const prototype = Object.getPrototypeOf(this);
+		const action = Reflect.getMetadata(`__action:get`, prototype);
+		const resources = await Promise.all(
+			action.resources.map(async ({ resource, resolver }) => {
+				const modelClass: any = this.app.models[resource];
+				const model = await modelClass.findOne({
+					where: {
+						id: resolver(this.request),
+					},
+					rejectOnEmpty: false,
+				});
+				return model?.arn;
+			})
+		);
+
+		console.log("Auth request", {
+			principal: this.principal.arn,
+			action: `${this.appPrefix}:${action.action}`,
+			resources,
+		});
 	}
 }
