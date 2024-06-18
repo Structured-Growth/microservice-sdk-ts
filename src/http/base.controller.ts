@@ -16,7 +16,7 @@ export abstract class BaseController {
 	protected principal: AuthenticatedAccountInterface | GuestPrincipalInterface;
 
 	constructor() {
-		this.app = container.resolve<string>("app");
+		this.app = container.resolve<string>("App");
 		this.appPrefix = container.resolve<string>("appPrefix");
 		this.logger = container.resolve<LoggerInterface>("Logger");
 		this.logger.module = this.constructor.name || "Controller";
