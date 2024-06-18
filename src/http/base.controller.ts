@@ -4,6 +4,7 @@ import { container } from "tsyringe";
 import { EventbusService } from "../eventbus";
 import { AuthenticatedAccountInterface, AuthServiceInterface, GuestPrincipalInterface } from "../auth";
 import { ServerError } from "../common/errors/server.error";
+import { filter, isUndefined } from "lodash";
 
 export abstract class BaseController {
 	protected app: any;
@@ -56,9 +57,13 @@ export abstract class BaseController {
 		const resources = await Promise.all(
 			action.resources.map(async ({ resource, resolver }) => {
 				const modelClass: any = this.app.models[resource];
+				const id = resolver(this.request);
+				if (!id) {
+					return;
+				}
 				const model = await modelClass.findOne({
 					where: {
-						id: resolver(this.request),
+						id,
 					},
 					rejectOnEmpty: false,
 				});
@@ -69,7 +74,7 @@ export abstract class BaseController {
 		console.log("Auth request", {
 			principal: this.principal.arn,
 			action: `${this.appPrefix}:${action.action}`,
-			resources,
+			resources: filter(resources, isUndefined),
 		});
 	}
 }
