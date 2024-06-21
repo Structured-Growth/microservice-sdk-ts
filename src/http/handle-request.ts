@@ -42,7 +42,7 @@ export function handleRequest(
 				res.json(result);
 				options.logResponses && (msg += " " + JSON.stringify(result));
 			} catch (e) {
-				res.status([401, 402, 404, 422].includes(e.code) ? e.code : 500);
+				res.status([401, 402, 403, 404, 422].includes(e.code) ? e.code : 500);
 				result = {
 					code: e.code,
 					name: e.name,
