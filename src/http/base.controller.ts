@@ -44,6 +44,7 @@ export abstract class BaseController {
 			const authHeader: string = headers?.["Authorization"]?.toString() || headers?.["authorization"]?.toString() || "";
 			const token = authHeader.substring(7); // remove "Bearer "
 			this.principal = await this.authService.getAuthenticatedUser(token);
+			this.logger.debug(`Authentication principal: ${this.principal.arn}`);
 		} catch (e) {
 			this.logger.info(`Authentication failed: ${e.message}`);
 			this.principal = {
@@ -84,7 +85,7 @@ export abstract class BaseController {
 						where: { id },
 						rejectOnEmpty: false,
 					});
-					this.logger.debug("Resolved ARN", model?.arn || "not resolved");
+					this.logger.debug("Resolved resource ARN", model?.arn || "not resolved");
 
 					return model?.arn;
 				})
@@ -93,6 +94,8 @@ export abstract class BaseController {
 
 		const actionArn = `${this.appPrefix}:${action.action}`;
 		const { effect } = await this.policyService.check(this.principal.arn, actionArn, resources);
+
+		this.logger.debug("Policy effect:", effect);
 
 		if (effect !== "allow") {
 			new ForbiddenError(
