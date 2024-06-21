@@ -81,7 +81,7 @@ export abstract class BaseController {
 						return;
 					}
 
-					const model = await modelClass.findOne({
+					const model = await modelClass?.findOne({
 						where: { id },
 						rejectOnEmpty: false,
 					});
