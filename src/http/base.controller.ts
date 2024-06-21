@@ -98,7 +98,7 @@ export abstract class BaseController {
 		this.logger.debug("Policy effect:", effect);
 
 		if (effect !== "allow") {
-			new ForbiddenError(
+			throw new ForbiddenError(
 				`Principal ${this.principal.arn} is not authorized to perform action ${actionArn} on resource ${resources.join(
 					", "
 				)}`
