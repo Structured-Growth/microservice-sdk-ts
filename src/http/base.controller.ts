@@ -18,7 +18,9 @@ export abstract class BaseController {
 	protected eventBus: EventbusService;
 	protected authService: AuthServiceInterface;
 	protected policyService: PolicyService;
-	protected principal: AuthenticatedAccountInterface | GuestPrincipalInterface;
+	protected principal: AuthenticatedAccountInterface | GuestPrincipalInterface = {
+		arn: "*",
+	};
 
 	constructor() {
 		this.app = container.resolve<string>("App");
@@ -47,9 +49,7 @@ export abstract class BaseController {
 			this.logger.debug(`Authentication principal: ${this.principal.arn}`);
 		} catch (e) {
 			this.logger.info(`Authentication failed: ${e.message}`);
-			this.principal = {
-				arn: "*",
-			};
+			this.principal = { arn: "*" };
 		}
 	}
 
