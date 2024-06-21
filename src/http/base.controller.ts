@@ -72,7 +72,7 @@ export abstract class BaseController {
 
 		const resources = (
 			await Promise.all(
-				action.resources.map(async ({ resource, resolver }) => {
+				action.resources?.map(async ({ resource, resolver }) => {
 					const modelClass: any = this.app.models[resource];
 					const id = resolver(this.request);
 					this.logger.debug("Resolved resource ID", resource, id || "not resolved");
@@ -88,7 +88,7 @@ export abstract class BaseController {
 					this.logger.debug("Resolved resource ARN", model?.arn || "not resolved");
 
 					return model?.arn;
-				})
+				}) || []
 			)
 		).filter((el) => !!el);
 
