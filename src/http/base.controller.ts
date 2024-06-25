@@ -45,6 +45,10 @@ export abstract class BaseController {
 			const headers = this.request?.headers;
 			const authHeader: string = headers?.["Authorization"]?.toString() || headers?.["authorization"]?.toString() || "";
 			const token = authHeader.substring(7); // remove "Bearer "
+			if (!token) {
+				this.principal = { arn: "*" };
+				return;
+			}
 			this.principal = await this.authService.getAuthenticatedUser(token);
 			this.logger.debug(`Authentication principal: ${this.principal.arn}`);
 		} catch (e) {
@@ -78,6 +82,11 @@ export abstract class BaseController {
 					this.logger.debug("Resolved resource ID", resource, id || "not resolved");
 
 					if (!id) {
+						return;
+					}
+
+					if (!modelClass) {
+						this.logger.warn("Model class not found for resource:", resource);
 						return;
 					}
 
