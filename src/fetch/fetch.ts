@@ -3,6 +3,10 @@ import { container } from "tsyringe";
 import { TokenResponse } from "@badgateway/oauth2-client/src/messages";
 import { OAuth2Token } from "@badgateway/oauth2-client/src/token";
 
+declare global {
+	type RequestInfo = any;
+}
+
 const client = new OAuth2Client({
 	server: "",
 	clientId: "",
