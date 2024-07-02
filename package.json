@@ -38,9 +38,11 @@
     "./mailer": "./.dist/mailer/index.js",
     "./sms": "./.dist/sms/index.js",
     "./key-value": "./.dist/key-value/index.js",
-    "./auth": "./.dist/auth/index.js"
+    "./auth": "./.dist/auth/index.js",
+    "./fetch": "./.dist/fetch/index.js"
   },
   "dependencies": {
+    "@badgateway/oauth2-client": "^2.3.0",
     "aws-sdk": "^2.1560.0",
     "body-parser": "^1.20.2",
     "cors": "^2.8.5",

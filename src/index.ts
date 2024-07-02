@@ -59,6 +59,7 @@ export { QueueProviderInterface } from "./queue/interfaces/queue-provider.interf
 
 export * from "./events";
 export * from "./auth";
+export * from "./fetch";
 
 export * from "./validation/validators";
 import * as joi from "joi";
