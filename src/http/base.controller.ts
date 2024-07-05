@@ -2,10 +2,11 @@ import { Request, Response } from "express";
 import { LoggerInterface } from "../logger/interfaces/logger.interface";
 import { container } from "tsyringe";
 import { EventbusService } from "../eventbus";
-import { AuthenticatedAccountInterface, AuthServiceInterface, GuestPrincipalInterface } from "../auth";
+import { AuthServiceInterface, GuestPrincipalInterface, PolicyService } from "../auth";
 import { ServerError } from "../common/errors/server.error";
-import { PolicyService } from "../auth";
 import { ForbiddenError } from "../common/errors/forbidden.error";
+import { PrincipalInterface } from "../auth/interfaces/principal.interface";
+import { PrincipalTypeEnum } from "../auth/interfaces/principal-type.enum";
 
 export abstract class BaseController {
 	public authenticationEnabled = true;
@@ -18,8 +19,9 @@ export abstract class BaseController {
 	protected eventBus: EventbusService;
 	protected authService: AuthServiceInterface;
 	protected policyService: PolicyService;
-	protected principal: AuthenticatedAccountInterface | GuestPrincipalInterface = {
+	protected principal: PrincipalInterface | GuestPrincipalInterface = {
 		arn: "*",
+		type: PrincipalTypeEnum.GUEST,
 	};
 
 	constructor() {
@@ -46,14 +48,20 @@ export abstract class BaseController {
 			const authHeader: string = headers?.["Authorization"]?.toString() || headers?.["authorization"]?.toString() || "";
 			const token = authHeader.substring(7); // remove "Bearer "
 			if (!token) {
-				this.principal = { arn: "*" };
+				this.principal = {
+					arn: "*",
+					type: PrincipalTypeEnum.GUEST,
+				};
 				return;
 			}
 			this.principal = await this.authService.authenticateByAccessToken(token);
 			this.logger.debug(`Authentication principal: ${this.principal.arn}`);
 		} catch (e) {
 			this.logger.info(`Authentication failed: ${e.message}`);
-			this.principal = { arn: "*" };
+			this.principal = {
+				arn: "*",
+				type: PrincipalTypeEnum.GUEST,
+			};
 		}
 	}
 
@@ -102,7 +110,7 @@ export abstract class BaseController {
 		).filter((el) => !!el);
 
 		const actionArn = `${this.appPrefix}:${action.action}`;
-		const { effect } = await this.policyService.check(this.principal.arn, actionArn, resources);
+		const { effect } = await this.policyService.check(this.principal.arn, this.principal.type, actionArn, resources);
 
 		this.logger.debug("Policy effect:", effect);
 
