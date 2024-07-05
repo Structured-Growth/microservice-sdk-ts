@@ -2,6 +2,7 @@ import { OAuth2Client, OAuth2Fetch } from "@badgateway/oauth2-client";
 import { container } from "tsyringe";
 import { TokenResponse } from "@badgateway/oauth2-client/src/messages";
 import { OAuth2Token } from "@badgateway/oauth2-client/src/token";
+import { AuthService } from "../auth";
 
 declare global {
 	type RequestInfo = any;
@@ -40,4 +41,17 @@ export function signedFetch(requestInfo, init?) {
 	client.settings.clientSecret = container.resolve<string>("OAuthClientSecret");
 
 	return fetchWrapper.fetch(requestInfo, init);
+}
+
+export function signedInternalFetch(requestInfo, init?) {
+	const authService = container.resolve<AuthService>("AuthService");
+	const jwtToken = authService.generateInternalAccessToken();
+
+	return fetch(requestInfo, {
+		...init,
+		headers: {
+			...init?.headers,
+			Authorization: `Bearer: ${jwtToken}`,
+		},
+	});
 }

@@ -1,15 +1,60 @@
 import { inject, injectable } from "tsyringe";
-import { AuthenticatedAccountInterface } from "./interfaces/authenticated-account.interface";
 import { ServerError } from "../common/errors/server.error";
 import { BadRequestError } from "../common/errors/bad-request.error";
 import { UnauthorizedError } from "../common/errors/unauthorized.error";
 import { AuthServiceInterface } from "./interfaces/auth-service.interface";
+import { PrincipalInterface } from "./interfaces/principal.interface";
+import { JwtService } from "./jwt.service";
+import { PrincipalTypeEnum } from "./interfaces/principal-type.enum";
 
 @injectable()
 export class AuthService implements AuthServiceInterface {
-	constructor(@inject("oAuthServiceGetUserUrl") private oAuthServiceGetUserUrl: string) {}
+	private jwtService: JwtService;
 
-	public async getAuthenticatedUser(accessToken: string): Promise<AuthenticatedAccountInterface> {
+	constructor(
+		@inject("oAuthServiceGetUserUrl") private oAuthServiceGetUserUrl: string,
+		@inject("internalAuthenticationEnabled") private internalAuthenticationEnabled: boolean,
+		@inject("internalAuthenticationJwtSecret") private internalAuthenticationJwtSecret: string,
+		@inject("appPrefix") private appPrefix: string
+	) {
+		this.jwtService = new JwtService(this.internalAuthenticationJwtSecret);
+	}
+
+	public async authenticateByAccessToken(accessToken: string): Promise<PrincipalInterface> {
+		const payload: any = this.jwtService.decode(accessToken);
+
+		if (!payload) {
+			throw new UnauthorizedError("Access token is invalid");
+		}
+
+		if (payload?.principal?.type === PrincipalTypeEnum.SERVICE) {
+			if (this.internalAuthenticationEnabled) {
+				return this.verifyInternalAccessToken(accessToken);
+			} else {
+				throw new UnauthorizedError(`Internal authentication is disabled`);
+			}
+		}
+
+		return this.verifyAccessTokenViaOAuthServer(accessToken);
+	}
+
+	public generateInternalAccessToken(): string {
+		const principal: PrincipalInterface = {
+			id: this.appPrefix,
+			orgId: null,
+			region: null,
+			type: PrincipalTypeEnum.SERVICE,
+			arn: this.appPrefix,
+		};
+		return this.jwtService.sing({ principal });
+	}
+
+	private verifyInternalAccessToken(accessToken: string): PrincipalInterface {
+		const payload: any = this.jwtService.verify(accessToken);
+		return payload.principal;
+	}
+
+	private async verifyAccessTokenViaOAuthServer(accessToken: string): Promise<PrincipalInterface> {
 		if (!this.oAuthServiceGetUserUrl) {
 			throw new ServerError(`oAuthServiceGetUserUrl is not set`);
 		}

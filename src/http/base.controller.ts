@@ -49,7 +49,7 @@ export abstract class BaseController {
 				this.principal = { arn: "*" };
 				return;
 			}
-			this.principal = await this.authService.getAuthenticatedUser(token);
+			this.principal = await this.authService.authenticateByAccessToken(token);
 			this.logger.debug(`Authentication principal: ${this.principal.arn}`);
 		} catch (e) {
 			this.logger.info(`Authentication failed: ${e.message}`);
