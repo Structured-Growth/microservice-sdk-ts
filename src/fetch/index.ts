@@ -1,1 +1,1 @@
-export { signedFetch } from "./fetch";
+export { signedFetch, signedInternalFetch } from "./fetch";
