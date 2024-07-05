@@ -51,7 +51,7 @@ export function signedInternalFetch(requestInfo, init?) {
 		...init,
 		headers: {
 			...init?.headers,
-			Authorization: `Bearer: ${jwtToken}`,
+			Authorization: `Bearer ${jwtToken}`,
 		},
 	});
 }
