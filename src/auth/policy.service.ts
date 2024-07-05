@@ -1,12 +1,14 @@
 import { inject, injectable } from "tsyringe";
 import { ServerError } from "../common/errors/server.error";
 import { LoggerInterface } from "../logger/interfaces/logger.interface";
+import { PrincipalTypeEnum } from "./interfaces/principal-type.enum";
 
 @injectable()
 export class PolicyService {
 	constructor(
 		@inject("policiesServiceUrl") private policiesServiceUrl: string,
-		@inject("Logger") private logger: LoggerInterface
+		@inject("Logger") private logger: LoggerInterface,
+		@inject("internalRequestsAllowed") private internalRequestsAllowed: boolean
 	) {}
 
 	/**
@@ -15,6 +17,7 @@ export class PolicyService {
 	 */
 	public async check(
 		principal: string,
+		principalType: PrincipalTypeEnum,
 		action: string,
 		resources: string[]
 	): Promise<{
@@ -22,6 +25,13 @@ export class PolicyService {
 	}> {
 		if (!this.policiesServiceUrl) {
 			throw new ServerError(`policiesServiceUrl is not set`);
+		}
+
+		// Check if internally signed requests are allowed
+		if (this.internalRequestsAllowed && principalType === PrincipalTypeEnum.SERVICE) {
+			return {
+				effect: "allow",
+			};
 		}
 
 		let data: any;
