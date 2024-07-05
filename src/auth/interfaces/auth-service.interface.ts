@@ -1,5 +1,4 @@
-import { AuthenticatedAccountInterface } from "./authenticated-account.interface";
-import {PrincipalInterface} from "./principal.interface";
+import { PrincipalInterface } from "./principal.interface";
 
 export interface AuthServiceInterface {
 	/**
@@ -10,6 +9,5 @@ export interface AuthServiceInterface {
 	 * @throws UnauthorizedError if token is invalid or expired
 	 * @throws ServerError if the server responded incorrectly
 	 */
-	authenticateByAccessToken(accessToken: string): Promise<PrincipalInterface>
+	authenticateByAccessToken(accessToken: string): Promise<PrincipalInterface>;
 }
-
