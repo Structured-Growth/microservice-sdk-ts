@@ -3,7 +3,7 @@ import { sortBy } from "lodash";
 
 export function DescribeResource(
 	resourceName: string,
-	resolver: (req: Request) => string | number,
+	resolver: (req: Request) => string | number | { arn: string },
 	arnPattern?: string
 ): Function {
 	return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {

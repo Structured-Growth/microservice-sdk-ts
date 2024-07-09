@@ -7,6 +7,7 @@ import { ServerError } from "../common/errors/server.error";
 import { ForbiddenError } from "../common/errors/forbidden.error";
 import { PrincipalInterface } from "../auth/interfaces/principal.interface";
 import { PrincipalTypeEnum } from "../auth/interfaces/principal-type.enum";
+import { isObject } from "lodash";
 
 export abstract class BaseController {
 	public authenticationEnabled = true;
@@ -91,6 +92,11 @@ export abstract class BaseController {
 
 					if (!id) {
 						return;
+					}
+
+					if (isObject(id) && id.arn) {
+						this.logger.debug("ARN resolved locally: ", id.arn);
+						return id.arn;
 					}
 
 					if (!modelClass) {
