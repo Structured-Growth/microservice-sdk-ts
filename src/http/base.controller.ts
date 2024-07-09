@@ -94,9 +94,9 @@ export abstract class BaseController {
 						return;
 					}
 
-					if (isObject(id) && id.arn) {
-						this.logger.debug("ARN resolved locally: ", id.arn);
-						return id.arn;
+					if (isObject(id) && id["arn"]) {
+						this.logger.debug("ARN resolved locally: ", id["arn"]);
+						return id["arn"];
 					}
 
 					if (!modelClass) {

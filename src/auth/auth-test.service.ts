@@ -1,10 +1,10 @@
-import {inject, injectable} from "tsyringe";
-import {BadRequestError} from "../common/errors/bad-request.error";
-import {UnauthorizedError} from "../common/errors/unauthorized.error";
-import {RegionEnum} from "../interfaces";
-import {AuthServiceInterface} from "./interfaces/auth-service.interface";
-import {PrincipalInterface} from "./interfaces/principal.interface";
-import {PrincipalTypeEnum} from "./interfaces/principal-type.enum";
+import { inject, injectable } from "tsyringe";
+import { BadRequestError } from "../common/errors/bad-request.error";
+import { UnauthorizedError } from "../common/errors/unauthorized.error";
+import { RegionEnum } from "../interfaces";
+import { AuthServiceInterface } from "./interfaces/auth-service.interface";
+import { PrincipalInterface } from "./interfaces/principal.interface";
+import { PrincipalTypeEnum } from "./interfaces/principal-type.enum";
 
 /**
  * Authenticate users in test cases
