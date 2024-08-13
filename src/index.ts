@@ -12,11 +12,14 @@ export { LoggerTransform } from "./logger/log-context.transform";
 export { DescribeAction } from "./decorators/describe-action";
 export { DescribeResource } from "./decorators/describe-resource";
 export { ValidateFuncArgs } from "./validation/validation.decorator";
+
 export { NotFoundError } from "./common/errors/not-found.error";
 export { ValidationError } from "./common/errors/validation.error";
 export { BadRequestError } from "./common/errors/bad-request.error";
 export { UnauthorizedError } from "./common/errors/unauthorized.error";
 export { ForbiddenError } from "./common/errors/forbidden.error";
+export { ServerError } from "./common/errors/server.error";
+
 export { LoggerInterface } from "./logger/interfaces/logger.interface";
 export { ErrorInterface } from "./interfaces/errors/error.interface";
 export { ValidationErrorInterface } from "./interfaces/errors/validation-error.interface";
