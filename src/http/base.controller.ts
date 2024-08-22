@@ -7,7 +7,7 @@ import { ServerError } from "../common/errors/server.error";
 import { ForbiddenError } from "../common/errors/forbidden.error";
 import { PrincipalInterface } from "../auth/interfaces/principal.interface";
 import { PrincipalTypeEnum } from "../auth/interfaces/principal-type.enum";
-import { isObject } from "lodash";
+import { flatten, isArray, isObject } from "lodash";
 
 export abstract class BaseController {
 	public authenticationEnabled = true;
@@ -83,37 +83,28 @@ export abstract class BaseController {
 			throw new ServerError("Action is not described. Use DescribeAction decorator.");
 		}
 
-		const resources = (
-			await Promise.all(
-				action.resources?.map(async ({ resource, resolver }) => {
-					const modelClass: any = this.app.models[resource];
-					const id = resolver(this.request);
-					this.logger.debug("Resolved resource ID", resource, id || "not resolved");
+		let resources =
+			action.resources?.map(({ resource, resolver }) => {
+				const id = resolver.call(this, this.request, this.response);
+				this.logger.debug("Resolved resource ID", resource, id || "not resolved");
+				const ids = isArray(id) ? id : [id];
 
-					if (!id) {
-						return;
-					}
+				return ids
+					.filter((i) => !!i)
+					.map((id) => {
+						if (isObject(id) && id["arn"]) {
+							this.logger.debug("ARN resolved locally: ", id["arn"]);
+							return id["arn"];
+						}
 
-					if (isObject(id) && id["arn"]) {
-						this.logger.debug("ARN resolved locally: ", id["arn"]);
-						return id["arn"];
-					}
-
-					if (!modelClass) {
-						this.logger.warn("Model class not found for resource:", resource);
-						return;
-					}
-
-					const model = await modelClass?.findOne({
-						where: { id },
-						rejectOnEmpty: false,
+						return {
+							resource,
+							id,
+						};
 					});
-					this.logger.debug("Resolved resource ARN", model?.arn || "not resolved");
+			}) || [];
 
-					return model?.arn;
-				}) || []
-			)
-		).filter((el) => !!el);
+		resources = flatten(resources).filter((el) => !!el);
 
 		const actionArn = `${this.appPrefix}:${action.action}`;
 		const { effect } = await this.policyService.check(this.principal.arn, this.principal.type, actionArn, resources);
@@ -121,10 +112,10 @@ export abstract class BaseController {
 		this.logger.debug("Policy effect:", effect);
 
 		if (effect !== "allow") {
+			const resourceStr = resources.map((resource) => `${resource.resource} ${resource.id}`).join(", ");
+
 			throw new ForbiddenError(
-				`Principal ${this.principal.arn} is not authorized to perform action ${actionArn} on resource ${resources.join(
-					", "
-				)}`
+				`Principal ${this.principal.arn} is not authorized to perform action ${actionArn} on resources: ${resourceStr}`
 			);
 		}
 	}
