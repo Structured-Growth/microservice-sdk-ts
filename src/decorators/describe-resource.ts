@@ -3,11 +3,13 @@ import { sortBy } from "lodash";
 
 type ResourceIdOrArn = string | number | { arn: string };
 
-export function DescribeResource<TParams, TBody, TQuery>(
+export function DescribeResource<
+	TParams = Record<string, any>,
+	TBody = Record<string, any>,
+	TQuery = Record<string, any>
+>(
 	resourceName: string,
-	resolver: (
-		req: Request<TParams | Record<string, any>, any, TBody | Record<string, any>, TQuery | Record<string, any>>
-	) => ResourceIdOrArn | ResourceIdOrArn[],
+	resolver: (req: Request<TParams, any, TBody, TQuery>) => ResourceIdOrArn | ResourceIdOrArn[],
 	arnPattern?: string
 ): Function {
 	return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
