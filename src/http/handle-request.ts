@@ -34,7 +34,7 @@ export function handleRequest(
 				if (authenticationEnabled === true && controller.authenticationEnabled) {
 					await controller.authenticate();
 				}
-				// authorize principal via Policies Service
+				// authorize request via Policies Service
 				if (authorizationEnabled === true && controller.authorizationEnabled) {
 					await controller.authorize(method);
 				}
