@@ -13,6 +13,7 @@ export async function connectDatabase(
 		password: string;
 		database: string;
 		port: number;
+		schema?: string;
 	},
 	enableLogging: boolean = false
 ) {

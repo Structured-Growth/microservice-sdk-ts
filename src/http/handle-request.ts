@@ -16,13 +16,13 @@ export function handleRequest(
 	} = {}
 ) {
 	const controller = new controllerClass();
-	const authenticationEnabled = container.resolve<boolean>("authenticationEnabled");
-	const authorizationEnabled = container.resolve<boolean>("authorizationEnabled");
 	const logger = container.resolve<Logger>("Logger");
 	logger.module = "Http";
 
 	return async function (req: Request, res: Response) {
 		await asyncLocalStorage.run(generator(), async () => {
+			const authenticationEnabled = container.resolve<boolean>("authenticationEnabled");
+			const authorizationEnabled = container.resolve<boolean>("authorizationEnabled");
 			const startTime = new Date().getTime();
 			const { params, query, body } = req;
 			let msg = options.logRequestBody ? JSON.stringify({ query, body }) : "";
