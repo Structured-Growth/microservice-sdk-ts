@@ -2,6 +2,7 @@ import { inject, injectable } from "tsyringe";
 import { ServerError } from "../common/errors/server.error";
 import { LoggerInterface } from "../logger/interfaces/logger.interface";
 import { PrincipalTypeEnum } from "./interfaces/principal-type.enum";
+import { signedInternalFetch } from "../fetch";
 
 @injectable()
 export class PolicyService {
@@ -19,7 +20,11 @@ export class PolicyService {
 		principal: string,
 		principalType: PrincipalTypeEnum,
 		action: string,
-		resources: string[]
+		resources: {
+			resource: string;
+			id: number | string;
+			arn: string;
+		}[]
 	): Promise<{
 		effect: "allow" | "deny";
 	}> {
@@ -37,10 +42,9 @@ export class PolicyService {
 		let data: any;
 
 		try {
-			const result = await fetch(`${this.policiesServiceUrl}/v1/policies/check`, {
+			const result = await signedInternalFetch(`${this.policiesServiceUrl}/v1/policies/check`, {
 				method: "POST",
 				headers: {
-					// Authorization: `Bearer ${accessToken}`,// TODO internal authentication
 					"Content-Type": "application/json",
 				},
 				body: JSON.stringify({
