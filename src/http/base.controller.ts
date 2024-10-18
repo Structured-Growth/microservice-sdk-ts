@@ -83,20 +83,34 @@ export abstract class BaseController {
 			throw new ServerError("Action is not described. Use DescribeAction decorator.");
 		}
 
+        // resolve resources from action
 		let resources = await Promise.all(
 			action.resources?.map(async ({ resource, resolver }) => {
 				const modelClass: any = this.app.models[resource];
 				const id = resolver.call(this, this.request, this.response);
 				this.logger.debug("Resolved resource ID", resource, id || "not resolved");
-				const ids = isArray(id) ? id : [id];
+				const ids: (number | string | { arn: string })[] = isArray(id) ? id : [id];
 
 				return await Promise.all(
 					ids
 						.filter((i) => !!i)
 						.map(async (id) => {
+							const result: {
+								resource: string;
+								id: string | number | null;
+								arn: string | null;
+							} = {
+								resource,
+								id: null,
+								arn: null,
+							};
+
 							if (isObject(id) && id["arn"]) {
 								this.logger.debug("ARN resolved locally: ", id["arn"]);
-								return id["arn"];
+								result.arn = id["arn"];
+								return result;
+							} else {
+								result.id = id as string | number;
 							}
 
 							if (modelClass) {
@@ -106,11 +120,11 @@ export abstract class BaseController {
 								});
 								this.logger.debug("Resolved resource ARN", model?.arn || "not resolved");
 								if (model) {
-									return model.arn;
+									result.arn = model.arn;
 								}
 							}
 
-							return { resource, id };
+							return result;
 						})
 				);
 			}) || []

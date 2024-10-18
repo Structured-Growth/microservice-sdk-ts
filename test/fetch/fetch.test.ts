@@ -11,8 +11,8 @@ describe("Send signed event", () => {
 	before(() => {
 		container.register("appPrefix", { useValue: process.env.APP_PREFIX || "microservice-sdk" });
 		container.register("region", { useValue: process.env.REGION || "us-west-2" });
-		container.register("oAuthServerUrl", { useValue: "https://dev.auth.starlionrc.com" });
-		container.register("oAuthServiceGetUserUrl", { useValue: "https://dev.auth.starlionrc.com/api/v1/oauth/user" });
+		container.register("oAuthServerUrl", { useValue: "http://localhost:3000" });
+		container.register("oAuthServiceGetUserUrl", { useValue: "http://localhost:3000api/v1/oauth/user" });
 		container.register("OAuthClientId", { useValue: "c2f048d4d44b36425d12d6a920d62f8e" });
 		container.register("OAuthClientSecret", {
 			useValue: "93276f14cf33eb8dc0b7228f1f788d42226a87a859784857b0e7f839cc7b123a",
