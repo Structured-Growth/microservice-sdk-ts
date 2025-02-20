@@ -9,7 +9,7 @@
     "test": "ts-node test/test.ts"
   },
   "author": "Structured Growth",
-  "license": "Commercial",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Structured-Growth/microservice-sdk-ts.git"
