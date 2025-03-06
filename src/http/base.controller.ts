@@ -8,6 +8,7 @@ import { ForbiddenError } from "../common/errors/forbidden.error";
 import { PrincipalInterface } from "../auth/interfaces/principal.interface";
 import { PrincipalTypeEnum } from "../auth/interfaces/principal-type.enum";
 import { flatten, isArray, isObject } from "lodash";
+import { UnauthorizedError } from "../common/errors/unauthorized.error";
 
 export abstract class BaseController {
 	public authenticationEnabled = true;
@@ -83,7 +84,7 @@ export abstract class BaseController {
 			throw new ServerError("Action is not described. Use DescribeAction decorator.");
 		}
 
-        // resolve resources from action
+		// resolve resources from action
 		let resources = await Promise.all(
 			action.resources?.map(async ({ resource, resolver }) => {
 				const modelClass: any = this.app.models[resource];
@@ -140,9 +141,15 @@ export abstract class BaseController {
 		if (effect !== "allow") {
 			const resourceStr = resources.map((resource) => `${resource.resource} ${resource.id}`).join(", ");
 
-			throw new ForbiddenError(
-				`Principal ${this.principal.arn} is not authorized to perform action ${actionArn} on resources: ${resourceStr}`
-			);
+			if (this.principal.arn === "*") {
+				throw new UnauthorizedError(
+					`Principal ${this.principal.arn} is not authorized to perform action ${actionArn} on resources: ${resourceStr}`
+				);
+			} else {
+				throw new ForbiddenError(
+					`Principal ${this.principal.arn} is not authorized to perform action ${actionArn} on resources: ${resourceStr}`
+				);
+			}
 		}
 	}
 }
