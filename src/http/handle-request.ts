@@ -7,6 +7,11 @@ import { ValidationError } from "../common/errors/validation.error";
 
 const generator = hyperid({ urlSafe: true });
 
+container.register("i18n", { useValue: () => {
+		const store = asyncLocalStorage.getStore();
+		return store?.i18n;
+}})
+
 export function handleRequest(
 	controllerClass,
 	method: string,
@@ -15,12 +20,20 @@ export function handleRequest(
 		logResponses?: boolean;
 	} = {}
 ) {
-	const controller = new controllerClass();
 	const logger = container.resolve<Logger>("Logger");
 	logger.module = "Http";
 
 	return async function (req: Request, res: Response) {
-		await asyncLocalStorage.run(generator(), async () => {
+
+		// init i18n
+
+		const store = {
+			id: generator(),
+			i18n: req.headers["Accept-Language"]
+		}
+
+		await asyncLocalStorage.run(store, async () => {
+			const controller = new controllerClass();
 			const authenticationEnabled = container.resolve<boolean>("authenticationEnabled");
 			const authorizationEnabled = container.resolve<boolean>("authorizationEnabled");
 			const startTime = new Date().getTime();
@@ -42,6 +55,7 @@ export function handleRequest(
 				res.json(result);
 				options.logResponses && (msg += " " + JSON.stringify(result));
 			} catch (e) {
+				console.error(e);
 				res.status([400, 401, 402, 403, 404, 422].includes(e.code) ? e.code : 500);
 				result = {
 					code: e.code,
