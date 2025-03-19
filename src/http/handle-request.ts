@@ -10,10 +10,12 @@ import { signedInternalFetch } from "../fetch";
 
 const generator = hyperid({ urlSafe: true });
 
-container.register("i18n", { useValue: () => {
+container.register("i18n", {
+	useValue: () => {
 		const store = asyncLocalStorage.getStore();
 		return store?.i18n;
-}})
+	},
+});
 
 const DEFAULT_LANGUAGE = process.env.DEFAULT_LANGUAGE || "en-US";
 const supportedLngs = process.env.DEFAULT_AVAILABLE_LANGUAGES?.split(",") || ["en"];
@@ -64,7 +66,6 @@ export function handleRequest(
 	logger.module = "Http";
 
 	return async function (req: Request, res: Response) {
-
 		const i18nInstance = Object.create(i18n);
 		const acceptLanguage = req.headers["accept-language"]?.split(",")[0].split(";")[0];
 		const lang = supportedLngs.includes(acceptLanguage) ? acceptLanguage : DEFAULT_LANGUAGE;
@@ -93,8 +94,8 @@ export function handleRequest(
 
 		const store = {
 			id: generator(),
-			i18n: i18nInstance
-		}
+			i18n: i18nInstance,
+		};
 
 		await asyncLocalStorage.run(store, async () => {
 			const controller = new controllerClass();
