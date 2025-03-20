@@ -3,6 +3,8 @@ import * as path from "path";
 import { asyncLocalStorage } from "../common/async-local-storage";
 import { signedInternalFetch } from "../fetch";
 import { container } from "tsyringe";
+import { config } from "dotenv";
+config();
 
 container.register("i18n", {
 	useValue: () => {
