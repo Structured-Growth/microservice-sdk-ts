@@ -33,7 +33,7 @@ export class ConsoleLogWriter implements LogWriterInterface {
 	}
 
 	private prefix(module: string, level: string) {
-		const id = asyncLocalStorage.getStore();
-		return `[${new Date().toISOString()}] [${id || ""}] ${level} [${module}]`;
+		const store = asyncLocalStorage.getStore();
+		return `[${new Date().toISOString()}] [${store?.id || ""}] ${level} [${module}]`;
 	}
 }

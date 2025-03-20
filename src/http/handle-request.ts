@@ -4,6 +4,7 @@ import * as hyperid from "hyperid";
 import { Logger } from "../logger";
 import { asyncLocalStorage } from "../common/async-local-storage";
 import { ValidationError } from "../common/errors/validation.error";
+import { getI18nInstance } from "./i18n";
 
 const generator = hyperid({ urlSafe: true });
 
@@ -15,12 +16,19 @@ export function handleRequest(
 		logResponses?: boolean;
 	} = {}
 ) {
-	const controller = new controllerClass();
 	const logger = container.resolve<Logger>("Logger");
 	logger.module = "Http";
 
 	return async function (req: Request, res: Response) {
-		await asyncLocalStorage.run(generator(), async () => {
+		const i18nInstance = await getI18nInstance(req);
+
+		const store = {
+			id: generator(),
+			i18n: i18nInstance,
+		};
+
+		await asyncLocalStorage.run(store, async () => {
+			const controller = new controllerClass();
 			const authenticationEnabled = container.resolve<boolean>("authenticationEnabled");
 			const authorizationEnabled = container.resolve<boolean>("authorizationEnabled");
 			const startTime = new Date().getTime();
