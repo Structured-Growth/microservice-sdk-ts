@@ -1,7 +1,7 @@
 import "reflect-metadata";
 import { config } from "dotenv";
 import { autoInjectable, container, inject, injectWithTransform, Lifecycle } from "tsyringe";
-import { handleRequest, Logger, LoggerInterface, LoggerTransform, logWriters } from "../../src";
+import { AuthService, handleRequest, Logger, LoggerInterface, LoggerTransform, logWriters } from "../../src";
 import { EventbusInterface, eventBusProviders, EventbusService } from "../../src/eventbus";
 import { random } from "lodash";
 
@@ -20,7 +20,11 @@ describe("Http handler event", () => {
 		container.register("EventbusService", EventbusService);
 		container.register("authenticationEnabled", { useValue: false });
 		container.register("authorizationEnabled", { useValue: false });
+		container.register("oAuthServiceGetUserUrl", { useValue: "#" });
+		container.register("internalAuthenticationEnabled", { useValue: true });
+		container.register("internalAuthenticationJwtSecret", { useValue: "E98tIrddUq5MuiPO407oM1sV9B3T4eh0450AuJ7Uk5xvrU2COT" });
 		container.register("EventbusService", EventbusService);
+		container.register("AuthService", AuthService);
 		eventbus = container.resolve<EventbusInterface>("EventbusService");
 	});
 
