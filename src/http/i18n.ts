@@ -17,7 +17,9 @@ i18n.configure({
 	updateFiles: false,
 	queryParameter: "lang",
 	objectNotation: true,
-	directory: path.join(process.cwd(), "src", "i18n", "locales"),
+	directory: process.env.DEFAULT_TRANSLATE_DIRECTORY_PATH
+		? path.resolve(process.env.DEFAULT_TRANSLATE_DIRECTORY_PATH)
+		: path.join(process.cwd(), "src", "i18n", "locales"),
 	api: {
 		t: "t",
 	},

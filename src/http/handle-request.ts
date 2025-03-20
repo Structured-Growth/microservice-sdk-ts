@@ -27,6 +27,8 @@ export function handleRequest(
 			i18n: i18nInstance,
 		};
 
+		console.log("DEFAULT_TRANSLATE_DIRECTORY_PATH:", process.env.DEFAULT_TRANSLATE_DIRECTORY_PATH);
+
 		await asyncLocalStorage.run(store, async () => {
 			const controller = new controllerClass();
 			const authenticationEnabled = container.resolve<boolean>("authenticationEnabled");
@@ -50,7 +52,6 @@ export function handleRequest(
 				res.json(result);
 				options.logResponses && (msg += " " + JSON.stringify(result));
 			} catch (e) {
-				console.error(e);
 				res.status([400, 401, 402, 403, 404, 422].includes(e.code) ? e.code : 500);
 				result = {
 					code: e.code,
