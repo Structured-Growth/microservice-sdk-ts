@@ -29,6 +29,96 @@ describe("Http handler event - i18n integration", () => {
 		eventbus = container.resolve<EventbusInterface>("EventbusService");
 	});
 
+	beforeEach(async () => {
+		let mockCallCounter = {};
+
+		global.fetch = async (url, options) => {
+			let json;
+
+			if (typeof url === "string" && url.includes("translation-set")) {
+				const lang = url.split("/").pop(); // Получаем язык из URL
+				if (!mockCallCounter[lang]) {
+					mockCallCounter[lang] = 0;
+				}
+
+				mockCallCounter[lang]++;
+
+				if (lang === "zh-CN") {
+					json = async () => {
+						if (mockCallCounter[lang] === 1) {
+							return {
+								common: {
+									"greeting.hello": "你好",
+									"farewell.goodbye": "再见",
+								},
+							};
+						} else if (mockCallCounter[lang] === 2) {
+							return {
+								common: {
+									"greeting.hello": "你好",
+									"greeting.hi": "你",
+									"farewell.goodbye": "再见",
+								},
+							};
+						} else {
+							return {
+								common: {
+									"greeting.hello": "你好",
+									"greeting.hi": "你",
+									"farewell.goodbye": "再见",
+									"farewell.see_you_later": "回头见",
+								},
+							};
+						}
+					};
+				} else if (lang === "pt-BR") {
+					json = async () => {
+						if (mockCallCounter[lang] === 1) {
+							return {
+								common: {
+									"greeting.hello": "Olá",
+									"farewell.goodbye": "Adeus",
+								},
+							};
+						} else if (mockCallCounter[lang] === 2) {
+							return {
+								common: {
+									"greeting.hello": "Olá",
+									"greeting.hi": "Oi",
+									"farewell.goodbye": "Adeus",
+								},
+							};
+						} else {
+							return {
+								common: {
+									"greeting.hello": "Olá",
+									"greeting.hi": "Oi",
+									"farewell.goodbye": "Adeus",
+									"farewell.see_you_later": "Até logo",
+								},
+							};
+						}
+					};
+				} else {
+					json = async () => ({
+						common: {
+							"greeting.hello": "Hello",
+							"farewell.goodbye": "Goodbye",
+						},
+					});
+				}
+			}
+
+			return {
+				ok: true,
+				status: 200,
+				json,
+				text: async () => JSON.stringify(await json()),
+				clone: () => ({ json, text: async () => JSON.stringify(await json()), status: 200, ok: true } as Response),
+			} as Response;
+		};
+	});
+
 	it("Must handle request with i18n and check caching", async () => {
 		@autoInjectable()
 		class Controller {
