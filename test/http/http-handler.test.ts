@@ -22,17 +22,17 @@ describe("Http handler event", () => {
 		container.register("authorizationEnabled", { useValue: false });
 		container.register("oAuthServiceGetUserUrl", { useValue: "#" });
 		container.register("internalAuthenticationEnabled", { useValue: true });
-		container.register("internalAuthenticationJwtSecret", { useValue: "E98tIrddUq5MuiPO407oM1sV9B3T4eh0450AuJ7Uk5xvrU2COT" });
+		container.register("internalAuthenticationJwtSecret", {
+			useValue: "E98tIrddUq5MuiPO407oM1sV9B3T4eh0450AuJ7Uk5xvrU2COT",
+		});
 		container.register("EventbusService", EventbusService);
 		container.register("AuthService", AuthService);
 		eventbus = container.resolve<EventbusInterface>("EventbusService");
 	});
 
 	it("Must handle request", async () => {
-
 		@autoInjectable()
 		class Controller {
-
 			private __: any;
 
 			constructor(
@@ -52,7 +52,7 @@ describe("Http handler event", () => {
 						this.logger.info("test2: " + this.__);
 						resolve(null);
 					}, random(500, 1000));
-				})
+				});
 
 				return {};
 			}
