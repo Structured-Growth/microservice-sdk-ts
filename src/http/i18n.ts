@@ -13,6 +13,10 @@ container.register("i18n", {
 	},
 });
 
+console.log("Directory: ", process.env.DEFAULT_TRANSLATE_DIRECTORY_PATH);
+console.log("Directory Resolve: ", path.resolve(process.env.DEFAULT_TRANSLATE_DIRECTORY_PATH));
+console.log("Directory Join: ", path.join(process.cwd(), "src", "i18n", "locales"));
+
 i18n.configure({
 	locales: process.env.DEFAULT_AVAILABLE_LANGUAGES?.split(",") || ["en"],
 	defaultLocale: process.env.DEFAULT_LANGUAGE || "en-US",
