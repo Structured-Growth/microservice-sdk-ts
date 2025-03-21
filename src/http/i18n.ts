@@ -88,7 +88,7 @@ export async function getI18nInstance(req): Promise<typeof i18n> {
 	console.log("TRANSLATE_API_CLIENT_ID: ", TRANSLATE_API_CLIENT_ID);
 
 	const i18nInstance = Object.create(i18n);
-	const acceptLanguageHeader = req.headers["Accept-Language"];
+	const acceptLanguageHeader = req.headers["Accept-Language"] || req.headers["accept-language"];
 	console.log("acceptLanguageHeader: ", acceptLanguageHeader);
 	const acceptLanguage = Array.isArray(acceptLanguageHeader)
 		? acceptLanguageHeader[0]?.split(",")[0].split(";")[0]
