@@ -43,14 +43,22 @@ describe("Http handler event - joi integration", () => {
 
 		(fs.readFileSync as any) = (filePath: any, encoding: any) => {
 			if (filePath.includes("en-US")) {
-				return JSON.stringify({ "test.accountId": "Account ID" });
+				return JSON.stringify({
+					test: {
+						accountId: "Account ID",
+					},
+				});
 			} else if (filePath.includes("zh-CN")) {
 				return JSON.stringify({
-					"test.accountId": "账户ID",
+					test: {
+						accountId: "账户ID",
+					},
 				});
 			} else if (filePath.includes("pt-BR")) {
 				return JSON.stringify({
-					"test.accountId": "ID da Conta",
+					test: {
+						accountId: "ID da Conta",
+					},
 				});
 			}
 			throw new Error("Mocked: File not found");
@@ -64,15 +72,21 @@ describe("Http handler event - joi integration", () => {
 
 				if (lang === "zh-CN") {
 					json = async () => ({
-						"test.accountId": "账户ID",
+						test: {
+							accountId: "账户ID",
+						},
 					});
 				} else if (lang === "pt-BR") {
 					json = async () => ({
-						"test.accountId": "ID da Conta",
+						test: {
+							accountId: "ID da Conta",
+						},
 					});
 				} else {
 					json = async () => ({
-						"test.accountId": "Account ID",
+						test: {
+							accountId: "Account ID",
+						},
 					});
 				}
 			}

@@ -136,7 +136,7 @@ export async function validate(
 		for (const detail of error.details) {
 			const pathKey = detail.path.join(".");
 			const labelKey = detail.context?.label ?? pathKey;
-			const label = translations[labelKey] ?? labelKey;
+			const label = get(translations, labelKey) ?? labelKey;
 
 			const messageKey = `joi.${detail.type}`;
 			const template = translations[messageKey] ?? detail.message;
