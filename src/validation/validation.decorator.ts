@@ -5,8 +5,8 @@ export function ValidateFuncArgs(validator): Function {
 	return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
 		const method = descriptor.value;
 		const argNames = $args(method);
-		descriptor.value = function () {
-			const result = validate(
+		descriptor.value = async function () {
+			const result = await validate(
 				validator,
 				argNames.reduce((acc, name, index) => {
 					acc[name] = arguments[index];

@@ -36,7 +36,7 @@ describe("Http handler event - i18n integration", () => {
 			let json;
 
 			if (typeof url === "string" && url.includes("translation-set")) {
-				const lang = url.split("/").pop(); // Получаем язык из URL
+				const lang = url.split("/").pop();
 				if (!mockCallCounter[lang]) {
 					mockCallCounter[lang] = 0;
 				}

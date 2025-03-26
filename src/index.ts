@@ -66,5 +66,6 @@ export * from "./fetch";
 
 export * from "./validation/validators";
 import * as joi from "joi";
+import * as defaultJoiTranslations from "./locale/joi.json";
 
-export { joi };
+export { joi, defaultJoiTranslations };
