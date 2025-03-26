@@ -139,7 +139,7 @@ export async function validate(
 			const label = get(translations, labelKey) ?? labelKey;
 
 			const messageKey = `joi.${detail.type}`;
-			const template = translations[messageKey] ?? detail.message;
+			const template = get(translations, messageKey) ?? detail.message;
 
 			const finalMessage = formatMessage(template, {
 				...detail.context,

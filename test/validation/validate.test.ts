@@ -96,15 +96,27 @@ describe("Http handler event - joi integration", () => {
 
 				if (lang === "zh-CN") {
 					json = async () => ({
-						"joi.any.required": "{{#label}} 是必填项",
+						joi: {
+							any: {
+								required: "{{#label}} 是必填项",
+							},
+						},
 					});
 				} else if (lang === "pt-BR") {
 					json = async () => ({
-						"joi.any.required": "{{#label}} é obrigatório",
+						joi: {
+							any: {
+								required: "{{#label}} é obrigatório",
+							},
+						},
 					});
 				} else {
 					json = async () => ({
-						"joi.any.required": "{{#label}} is required",
+						joi: {
+							any: {
+								required: "{{#label}} is required",
+							},
+						},
 					});
 				}
 			}
