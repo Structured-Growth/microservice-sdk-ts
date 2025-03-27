@@ -14,7 +14,7 @@
       "ES2021"
     ],
     "skipLibCheck": true,
-    "resolveJsonModule": true,
+    "resolveJsonModule": true
   },
   "include": [
     "src",
