@@ -86,22 +86,29 @@ export async function getI18nInstance(req): Promise<typeof i18n> {
 	const lang = supportedLngs.includes(acceptLanguage) ? acceptLanguage : DEFAULT_LANGUAGE;
 	i18nInstance.setLocale(lang);
 
-	if (lang !== DEFAULT_LANGUAGE && TRANSLATE_API_URL && TRANSLATE_API_CLIENT_ID) {
-		const translations = await loadTranslations(lang);
+	if (TRANSLATE_API_URL && TRANSLATE_API_CLIENT_ID) {
+		try {
+			const translations = await loadTranslations(lang);
 
-		if (Object.keys(translations).length > 0) {
-			i18nInstance.locale = lang;
-			i18nInstance.__ = (key: string) => {
-				const keys = key.split(".");
-				let result = translations;
+			if (Object.keys(translations).length > 0) {
+				i18nInstance.locale = lang;
+				i18nInstance.__ = (key: string) => {
+					const keys = key.split(".");
+					let result = translations;
 
-				for (const k of keys) {
-					result = result?.[k];
-					if (result === undefined) return undefined;
-				}
+					for (const k of keys) {
+						result = result?.[k];
+						if (result === undefined) return key;
+					}
 
-				return result;
-			};
+					return result;
+				};
+			} else {
+				i18nInstance.setLocale(DEFAULT_LANGUAGE);
+			}
+		} catch (error) {
+			console.log(`Translation loading error for "${lang}":`, error);
+			i18nInstance.setLocale(DEFAULT_LANGUAGE);
 		}
 	} else {
 		i18nInstance.setLocale(DEFAULT_LANGUAGE);
