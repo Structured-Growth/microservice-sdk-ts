@@ -67,5 +67,8 @@ export * from "./fetch";
 export * from "./validation/validators";
 import * as joi from "joi";
 import * as defaultJoiTranslations from "./locale/joi.json";
+import i18n from "i18n";
 
-export { joi, defaultJoiTranslations };
+type I18nType = typeof i18n;
+
+export { joi, defaultJoiTranslations, I18nType };
