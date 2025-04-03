@@ -6,12 +6,11 @@ import * as fs from "fs";
 import * as path from "path";
 import * as defaultJoiTranslations from "../locale/joi.json";
 
-const translationCache: Record<string, { joi: object; client: object }> = {};
+const translationCache: Record<string, { client: object }> = {};
 const translationCacheExpiration: Record<string, number> = {};
 const translationFetching: Record<string, Promise<void> | null> = {};
 
 async function loadValidationTranslations(locale: string): Promise<{
-	joi: object;
 	client: object;
 }> {
 	if (
@@ -21,14 +20,6 @@ async function loadValidationTranslations(locale: string): Promise<{
 		if (!translationFetching[locale]) {
 			translationFetching[locale] = new Promise(async (resolve, reject) => {
 				try {
-					const urlJoi = `${process.env.TRANSLATE_API_URL}/v1/translation-set/${process.env.JOI_TRANSLATE_API_CLIENT_ID}/${locale}`;
-					const responseJoi = await signedInternalFetch(urlJoi, {
-						method: "get",
-						headers: { "Content-Type": "application/json" },
-					});
-					if (!responseJoi.ok) throw new Error(`Joi translations error (${responseJoi.status})`);
-					const joi = (await responseJoi.json()) as object;
-
 					const urlClient = `${process.env.TRANSLATE_API_URL}/v1/translation-set/${process.env.TRANSLATE_API_CLIENT_ID}/${locale}`;
 					const responseClient = await signedInternalFetch(urlClient, {
 						method: "get",
@@ -37,7 +28,7 @@ async function loadValidationTranslations(locale: string): Promise<{
 					if (!responseClient.ok) throw new Error(`Client translations error (${responseClient.status})`);
 					const client = (await responseClient.json()) as object;
 
-					translationCache[locale] = { joi, client };
+					translationCache[locale] = { client };
 					translationCacheExpiration[locale] =
 						Date.now() + (Number(process.env.DEFAULT_TRANSLATION_CACHE_EXPIRATION) || 3600 * 1000);
 
@@ -95,31 +86,27 @@ export async function validate(
 	const i18n = store?.i18n;
 	const locale = i18n?.locale || process.env.DEFAULT_LANGUAGE;
 
-	let joiTranslations = {};
-	let clientTranslations = {};
-
+	let translations;
 	const useLocal = !i18n?.locale;
 
 	if (useLocal) {
 		const local = loadLocalTranslations(process.env.DEFAULT_LANGUAGE);
-		joiTranslations = local.joiTranslations;
-		clientTranslations = local.clientTranslations;
+		translations = {
+			...local.joiTranslations,
+			...local.clientTranslations,
+		};
 	} else {
 		try {
-			const { joi, client } = await loadValidationTranslations(locale);
-			joiTranslations = joi;
-			clientTranslations = client;
+			const { client } = await loadValidationTranslations(locale);
+			translations = client;
 		} catch (err) {
 			const local = loadLocalTranslations(process.env.DEFAULT_LANGUAGE);
-			joiTranslations = local.joiTranslations;
-			clientTranslations = local.clientTranslations;
+			translations = {
+				...local.joiTranslations,
+				...local.clientTranslations,
+			};
 		}
 	}
-
-	const translations = {
-		...joiTranslations,
-		...clientTranslations,
-	};
 
 	const { error } = validator.validate(data, {
 		abortEarly: false,
