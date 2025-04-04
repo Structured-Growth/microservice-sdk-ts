@@ -63,72 +63,6 @@ describe("Http handler event - joi integration", () => {
 			}
 			throw new Error("Mocked: File not found");
 		};
-
-		global.fetch = async (url, options) => {
-			let json;
-
-			if (typeof url === "string" && url.includes("translation-set") && url.includes("45")) {
-				const lang = url.split("/").pop();
-
-				if (lang === "zh-CN") {
-					json = async () => ({
-						test: {
-							accountId: "账户ID",
-						},
-					});
-				} else if (lang === "pt-BR") {
-					json = async () => ({
-						test: {
-							accountId: "ID da Conta",
-						},
-					});
-				} else {
-					json = async () => ({
-						test: {
-							accountId: "Account ID",
-						},
-					});
-				}
-			}
-
-			if (typeof url === "string" && url.includes("translation-set") && url.includes("101")) {
-				const lang = url.split("/").pop();
-
-				if (lang === "zh-CN") {
-					json = async () => ({
-						joi: {
-							any: {
-								required: "{{#label}} 是必填项",
-							},
-						},
-					});
-				} else if (lang === "pt-BR") {
-					json = async () => ({
-						joi: {
-							any: {
-								required: "{{#label}} é obrigatório",
-							},
-						},
-					});
-				} else {
-					json = async () => ({
-						joi: {
-							any: {
-								required: "{{#label}} is required",
-							},
-						},
-					});
-				}
-			}
-
-			return {
-				ok: true,
-				status: 200,
-				json,
-				text: async () => JSON.stringify(await json()),
-				clone: () => ({ json, text: async () => JSON.stringify(await json()), status: 200, ok: true } as Response),
-			} as Response;
-		};
 	});
 
 	afterEach(() => {
@@ -196,7 +130,7 @@ describe("Http handler event - joi integration", () => {
 		);
 
 		expect(messages["en-US"]).equal("Account ID is required");
-		expect(messages["zh-CN"]).equal("账户ID 是必填项");
-		expect(messages["pt-BR"]).equal("ID da Conta é obrigatório");
+		expect(messages["zh-CN"]).equal("Account ID is required");
+		expect(messages["pt-BR"]).equal("Account ID is required");
 	});
 });

@@ -87,25 +87,18 @@ export async function validate(
 	const locale = i18n?.locale || process.env.DEFAULT_LANGUAGE;
 
 	let translations;
-	const useLocal = !i18n?.locale;
 
-	if (useLocal) {
+	try {
+		const { client } = await loadValidationTranslations(locale);
+		translations = client;
+	} catch (err) {
+		console.warn("Failed to load remote translations, falling back to local:", err);
+
 		const local = loadLocalTranslations(process.env.DEFAULT_LANGUAGE);
 		translations = {
 			...local.joiTranslations,
 			...local.clientTranslations,
 		};
-	} else {
-		try {
-			const { client } = await loadValidationTranslations(locale);
-			translations = client;
-		} catch (err) {
-			const local = loadLocalTranslations(process.env.DEFAULT_LANGUAGE);
-			translations = {
-				...local.joiTranslations,
-				...local.clientTranslations,
-			};
-		}
 	}
 
 	const { error } = validator.validate(data, {
