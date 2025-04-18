@@ -114,12 +114,14 @@ export async function validate(
 
 	if (error?.details) {
 		for (const detail of error.details) {
+			console.log("Detail: ", detail);
 			const pathKey = detail.path.join(".");
 			const labelKey = detail.context?.label ?? pathKey;
 			const label = get(translations, labelKey) ?? labelKey;
 
 			const messageKey = `joi.${detail.type}`;
-			const template = get(translations, messageKey) ?? detail.message;
+			const rawTemplate = get(translations, messageKey);
+			const template = typeof rawTemplate === "string" ? rawTemplate : detail.message;
 
 			const finalMessage = formatMessage(template, {
 				...detail.context,
