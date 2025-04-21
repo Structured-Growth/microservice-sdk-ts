@@ -28,10 +28,6 @@ async function loadValidationTranslations(locale: string): Promise<{
 			translationFetching[locale] = new Promise(async (resolve, reject) => {
 				try {
 					const urlClient = `${process.env.TRANSLATE_API_URL}/v1/translation-set/${process.env.TRANSLATE_API_CLIENT_ID}/${locale}`;
-					// const responseClient = await signedInternalFetch(urlClient, {
-					// 	method: "get",
-					// 	headers: { "Content-Type": "application/json" },
-					// });
 					const responseClient = await fetchWithTimeout(
 						signedInternalFetch(urlClient, {
 							method: "get",
@@ -102,17 +98,25 @@ export async function validate(
 
 	let translations;
 
-	try {
-		const { client } = await loadValidationTranslations(locale);
-		translations = client;
-	} catch (err) {
-		console.log("Failed to load remote translations, falling back to local:", err);
-
+	const useLocalTranslations = () => {
 		const local = loadLocalTranslations(process.env.DEFAULT_LANGUAGE);
-		translations = {
+		return {
 			...local.joiTranslations,
 			...local.clientTranslations,
 		};
+	};
+
+	if (!process.env.TRANSLATE_API_URL || process.env.TRANSLATE_API_URL.trim() === "") {
+		console.info("Skipping remote translation fetch: TRANSLATE_API_URL is empty");
+		translations = useLocalTranslations();
+	} else {
+		try {
+			const { client } = await loadValidationTranslations(locale);
+			translations = client;
+		} catch (err) {
+			console.log("Failed to load remote translations, falling back to local:", err);
+			translations = useLocalTranslations();
+		}
 	}
 
 	const { error } = validator.validate(data, {
