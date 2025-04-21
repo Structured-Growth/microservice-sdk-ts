@@ -10,6 +10,13 @@ const translationCache: Record<string, { client: object }> = {};
 const translationCacheExpiration: Record<string, number> = {};
 const translationFetching: Record<string, Promise<void> | null> = {};
 
+function fetchWithTimeout<T>(promise: Promise<T>, timeout: number): Promise<T> {
+	return Promise.race([
+		promise,
+		new Promise<T>((_, reject) => setTimeout(() => reject(new Error("Fetch timed out")), timeout)),
+	]);
+}
+
 async function loadValidationTranslations(locale: string): Promise<{
 	client: object;
 }> {
@@ -21,10 +28,17 @@ async function loadValidationTranslations(locale: string): Promise<{
 			translationFetching[locale] = new Promise(async (resolve, reject) => {
 				try {
 					const urlClient = `${process.env.TRANSLATE_API_URL}/v1/translation-set/${process.env.TRANSLATE_API_CLIENT_ID}/${locale}`;
-					const responseClient = await signedInternalFetch(urlClient, {
-						method: "get",
-						headers: { "Content-Type": "application/json" },
-					});
+					// const responseClient = await signedInternalFetch(urlClient, {
+					// 	method: "get",
+					// 	headers: { "Content-Type": "application/json" },
+					// });
+					const responseClient = await fetchWithTimeout(
+						signedInternalFetch(urlClient, {
+							method: "get",
+							headers: { "Content-Type": "application/json" },
+						}),
+						7000
+					);
 					if (!responseClient.ok) throw new Error(`Client translations error (${responseClient.status})`);
 					const client = (await responseClient.json()) as object;
 
@@ -92,7 +106,7 @@ export async function validate(
 		const { client } = await loadValidationTranslations(locale);
 		translations = client;
 	} catch (err) {
-		console.warn("Failed to load remote translations, falling back to local:", err);
+		console.log("Failed to load remote translations, falling back to local:", err);
 
 		const local = loadLocalTranslations(process.env.DEFAULT_LANGUAGE);
 		translations = {
