@@ -20,6 +20,7 @@ export function handleRequest(
 	logger.module = "Http";
 
 	return async function (req: Request, res: Response) {
+		const acceptLanguageHeader = req.headers["Accept-Language"] || req.headers["accept-language"] || "unknown";
 		const i18nInstance = await getI18nInstance(req);
 
 		const store = {
@@ -67,7 +68,14 @@ export function handleRequest(
 				options.logResponses && (msg += " " + JSON.stringify(result));
 			} finally {
 				const endTime = new Date().getTime();
-				logger.debug(req.method, res.statusCode, req.path, `${endTime - startTime}ms`, msg || "");
+				logger.debug(
+					req.method,
+					res.statusCode,
+					req.path,
+					`${endTime - startTime}ms`,
+					`lang=${acceptLanguageHeader}`,
+					msg || ""
+				);
 			}
 		});
 	};
