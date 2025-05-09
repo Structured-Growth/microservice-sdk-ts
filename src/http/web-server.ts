@@ -1,7 +1,7 @@
 import * as express from "express";
 import * as cors from "cors";
 import * as bodyParser from "body-parser";
-import multer from "multer";
+import * as multer from "multer";
 
 const upload = multer({ storage: multer.memoryStorage() });
 
