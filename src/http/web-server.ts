@@ -5,7 +5,7 @@ import multer from "multer";
 
 const upload = multer({ storage: multer.memoryStorage() });
 
-export function webServer(routes, customRoutes?) {
+export function webServer(routes) {
 	const server = express();
 	server.use(cors());
 	server.use(bodyParser.json());
