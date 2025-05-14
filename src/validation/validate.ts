@@ -106,7 +106,11 @@ export async function validate(
 		};
 	};
 
-	if (!process.env.TRANSLATE_API_URL || process.env.TRANSLATE_API_URL.trim() === "") {
+	if (
+		!process.env.TRANSLATE_API_URL ||
+		process.env.TRANSLATE_API_URL.trim() === "" ||
+		!process.env.TRANSLATE_API_CLIENT_ID
+	) {
 		console.info("Skipping remote translation fetch: TRANSLATE_API_URL is empty");
 		translations = useLocalTranslations();
 	} else {
