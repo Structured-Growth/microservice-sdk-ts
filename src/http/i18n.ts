@@ -83,6 +83,8 @@ export async function getI18nInstance(req): Promise<typeof i18n> {
 		? acceptLanguageHeader[0]?.split(",")[0].split(";")[0]
 		: acceptLanguageHeader?.split(",")[0].split(";")[0];
 
+	i18nInstance.acceptLanguage = acceptLanguage;
+
 	const lang = supportedLngs.includes(acceptLanguage) ? acceptLanguage : DEFAULT_LANGUAGE;
 	i18nInstance.setLocale(lang);
 
