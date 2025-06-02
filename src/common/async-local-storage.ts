@@ -2,7 +2,7 @@
 // node:async_hooks
 // Module build failed: UnhandledSchemeError: Reading from "node:async_hooks" is not handled by plugins (Unhandled scheme).
 
-import { AsyncLocalStorage } from "node:async_hooks";
+import { AsyncLocalStorage } from "async_hooks";
 
 export const asyncLocalStorage = new AsyncLocalStorage<{
 	id: string;
