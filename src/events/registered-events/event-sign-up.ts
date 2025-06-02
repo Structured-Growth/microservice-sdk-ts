@@ -7,7 +7,8 @@ export interface EventSingUpDataInterface {
 	accountArn: string;
 	firstName: string;
 	lastName: string;
-	email: string;
+	email?: string;
+	phone?: string;
 	allowMarketingEmails: boolean;
 }
 
