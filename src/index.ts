@@ -72,3 +72,5 @@ import i18n from "i18n";
 type I18nType = typeof i18n;
 
 export { joi, defaultJoiTranslations, I18nType };
+
+export { getI18nInstance } from "./http/i18n";
