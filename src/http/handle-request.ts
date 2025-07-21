@@ -69,6 +69,9 @@ export function handleRequest(
 			} finally {
 				const endTime = new Date().getTime();
 				const principalId = controller.principal?.id ?? "unknown";
+
+				console.log("Principal: ", controller.principal);
+
 				logger.debug(
 					req.method,
 					res.statusCode,
