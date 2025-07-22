@@ -11,6 +11,8 @@ export { BaseController } from "./http/base.controller";
 export { LoggerTransform } from "./logger/log-context.transform";
 export { DescribeAction } from "./decorators/describe-action";
 export { DescribeResource } from "./decorators/describe-resource";
+export { MaskFields } from "./decorators/mask-fields";
+export { HashFields } from "./decorators/hash-fields";
 export { ValidateFuncArgs } from "./validation/validation.decorator";
 
 export { NotFoundError } from "./common/errors/not-found.error";
