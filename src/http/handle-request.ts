@@ -5,6 +5,7 @@ import { Logger } from "../logger";
 import { asyncLocalStorage } from "../common/async-local-storage";
 import { ValidationError } from "../common/errors/validation.error";
 import { getI18nInstance } from "./i18n";
+import { applySensitiveFieldTransformations } from "../common/apply-sensitive-field-transformations";
 
 const generator = hyperid({ urlSafe: true });
 
@@ -34,7 +35,15 @@ export function handleRequest(
 			const authorizationEnabled = container.resolve<boolean>("authorizationEnabled");
 			const startTime = new Date().getTime();
 			const { params, query, body } = req;
-			let msg = options.logRequestBody ? JSON.stringify({ query, body }) : "";
+			const metadata = Reflect.getMetadata(`__action:${method}`, controllerClass.prototype);
+			const maskFields = metadata?.maskFields || [];
+			const hashFields = metadata?.hashFields || [];
+			console.log("Mask fields:", maskFields);
+			console.log("Hash fields:", hashFields);
+			// let msg = options.logRequestBody ? JSON.stringify({ query, body }) : "";
+			const safePayload = applySensitiveFieldTransformations({ body, query, params }, maskFields, hashFields);
+			let msg = options.logRequestBody ? JSON.stringify({ query: safePayload.query, body: safePayload.body }) : "";
+
 			let result;
 
 			try {
