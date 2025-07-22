@@ -68,14 +68,15 @@ export function handleRequest(
 				options.logResponses && (msg += " " + JSON.stringify(result));
 			} finally {
 				const endTime = new Date().getTime();
-				const principalId = controller.principal?.id ?? "unknown";
+				const principal = controller.principal?.arn ?? "unknown";
+
 				logger.debug(
 					req.method,
 					res.statusCode,
 					req.path,
 					`${endTime - startTime}ms`,
 					`lang=${acceptLanguageHeader}`,
-					`principalId=${principalId}`,
+					`principal=${principal}`,
 					msg || ""
 				);
 			}
