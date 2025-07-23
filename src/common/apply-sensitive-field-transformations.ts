@@ -5,6 +5,46 @@ function hashValue(value: any): string {
 	return value == null ? "" : crypto.createHash("sha256").update(String(value)).digest("hex");
 }
 
+function sanitizeObject(obj: any, maskFields: string[], hashFields: string[]): any {
+	if (Array.isArray(obj)) {
+		return obj.map((item) => sanitizeObject(item, maskFields, hashFields));
+	}
+
+	if (typeof obj !== "object" || obj === null) {
+		return obj;
+	}
+
+	const result = { ...obj };
+
+	for (const key in result) {
+		const value = result[key];
+
+		if (maskFields.includes(key) && value != null) {
+			if (Array.isArray(value)) {
+				result[key] = value.map((v) => "*".repeat(String(v).length));
+			} else {
+				result[key] = "*".repeat(String(value).length);
+			}
+			continue;
+		}
+
+		if (hashFields.includes(key) && value != null) {
+			if (Array.isArray(value)) {
+				result[key] = value.map((v) => hashValue(v));
+			} else {
+				result[key] = hashValue(value);
+			}
+			continue;
+		}
+
+		if (typeof value === "object") {
+			result[key] = sanitizeObject(value, maskFields, hashFields);
+		}
+	}
+
+	return result;
+}
+
 export function applySensitiveFieldTransformations(
 	source: { body?: any; query?: any; params?: any },
 	maskFields: string[],
@@ -20,27 +60,7 @@ export function applySensitiveFieldTransformations(
 		const section = result[target];
 		if (!section || typeof section !== "object") continue;
 
-		for (const key of maskFields) {
-			const value = section[key];
-			if (value === undefined || value === null) continue;
-
-			if (Array.isArray(value)) {
-				section[key] = value.map((v) => "*".repeat(String(v).length));
-			} else {
-				section[key] = "*".repeat(String(value).length);
-			}
-		}
-
-		for (const key of hashFields) {
-			const value = section[key];
-			if (value === undefined || value === null) continue;
-
-			if (Array.isArray(value)) {
-				section[key] = value.map((v) => hashValue(v));
-			} else {
-				section[key] = hashValue(value);
-			}
-		}
+		result[target] = sanitizeObject(section, maskFields, hashFields);
 	}
 
 	return result;
