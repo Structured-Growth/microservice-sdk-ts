@@ -38,9 +38,6 @@ export function handleRequest(
 			const metadata = Reflect.getMetadata(`__action:${method}`, controllerClass.prototype);
 			const maskFields = metadata?.maskFields || [];
 			const hashFields = metadata?.hashFields || [];
-			console.log("Mask fields:", maskFields);
-			console.log("Hash fields:", hashFields);
-			// let msg = options.logRequestBody ? JSON.stringify({ query, body }) : "";
 			const safePayload = applySensitiveFieldTransformations({ body, query, params }, maskFields, hashFields);
 			let msg = options.logRequestBody ? JSON.stringify({ query: safePayload.query, body: safePayload.body }) : "";
 
