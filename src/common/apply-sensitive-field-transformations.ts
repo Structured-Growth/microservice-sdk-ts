@@ -50,7 +50,6 @@ export function applySensitiveFieldTransformations(
 	maskFields: string[],
 	hashFields: string[]
 ): { body?: any; query?: any; params?: any } {
-	console.log("SOURCE: ", source);
 	if (!maskFields.length && !hashFields.length) return source;
 
 	const result = cloneDeep(source);
