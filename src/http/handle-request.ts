@@ -58,7 +58,11 @@ export function handleRequest(
 				}
 				result = await controller[method]?.call(controller, ...Object.values(params), query, body);
 				res.json(result);
-				options.logResponses && (msg += " " + JSON.stringify(result));
+				if (options.logResponses) {
+					const sanitizedResult = applySensitiveFieldTransformations({ body: result }, maskFields, hashFields).body;
+
+					msg += " " + JSON.stringify(sanitizedResult);
+				}
 			} catch (e) {
 				res.status([400, 401, 402, 403, 404, 422].includes(e.code) ? e.code : 500);
 				result = {
