@@ -7,7 +7,7 @@ import { ServerError } from "../common/errors/server.error";
 import { ForbiddenError } from "../common/errors/forbidden.error";
 import { PrincipalInterface } from "../auth/interfaces/principal.interface";
 import { PrincipalTypeEnum } from "../auth/interfaces/principal-type.enum";
-import { flatten, isArray, isObject } from "lodash";
+import { flatten, isArray, isObject, uniq } from "lodash";
 import { UnauthorizedError } from "../common/errors/unauthorized.error";
 
 export abstract class BaseController {
@@ -88,7 +88,7 @@ export abstract class BaseController {
 		let resources = await Promise.all(
 			action.resources?.map(async ({ resource, resolver }) => {
 				const modelClass: any = this.app.models[resource];
-				const id = resolver.call(this, this.request, this.response);
+				const id = uniq<any>(resolver.call(this, this.request, this.response));
 				this.logger.debug("Resolved resource ID", resource, id || "not resolved");
 				const ids: (number | string | { arn: string })[] = isArray(id) ? id : [id];
 
