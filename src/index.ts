@@ -46,9 +46,10 @@ export { ValueInterface } from "./key-value/interfaces/value.interface";
 
 export { Mailer } from "./mailer/mailer";
 export { SesEmailTransport } from "./mailer/transport/ses-email-transport";
+export { AliyunDmEmailTransport } from "./mailer/transport/aliyun-dm-email-transport";
 export { emailTransports } from "./mailer/transport";
 
-export { smsProviders, SnsSmsProvider } from "./sms/providers";
+export { smsProviders, SnsSmsProvider, AliyunSmsProvider } from "./sms/providers";
 export { SmsService } from "./sms/sms.service";
 export { SmsProviderInterface } from "./sms/interfaces/sms-provider.interface";
 
