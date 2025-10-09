@@ -42,6 +42,9 @@
     "./fetch": "./.dist/fetch/index.js"
   },
   "dependencies": {
+    "@alicloud/dm20151123": "^1.6.2",
+    "@alicloud/dysmsapi20170525": "^4.2.0",
+    "@alicloud/openapi-client": "^0.4.15",
     "@badgateway/oauth2-client": "^2.3.0",
     "aws-sdk": "^2.1560.0",
     "body-parser": "^1.20.2",
