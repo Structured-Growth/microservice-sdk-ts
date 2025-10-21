@@ -50,6 +50,15 @@ export async function connectDatabase(
 		  }
 		: {};
 
+	const poolDefaults = {
+		max: 5,
+		min: 0,
+		acquire: 10000,
+		idle: 10000,
+		evict: 10000,
+		maxUses: 0,
+	};
+
 	const sequelize = new Sequelize({
 		dialect: "postgres",
 		dialectModule: pg,
@@ -59,7 +68,7 @@ export async function connectDatabase(
 		password: config.password,
 		database: config.database,
 		schema: config.schema,
-		pool: isLambda ? { ...lambdaOverrides.pool } : config.pool,
+		pool: isLambda ? { ...lambdaOverrides.pool } : { ...poolDefaults, ...(config.pool ?? {}) },
 		dialectOptions: {
 			...(config.dialectOptions ?? {}),
 			...(isLambda ? lambdaDialectOptions : {}),
