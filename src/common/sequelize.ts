@@ -14,34 +14,67 @@ export async function connectDatabase(
 		database: string;
 		port: number;
 		schema?: string;
+		pool?: Partial<{
+			max: number;
+			min: number;
+			acquire: number;
+			idle: number;
+			evict: number;
+			maxUses: number;
+		}>;
+		dialectOptions?: Record<string, any>;
+		benchmark?: boolean;
+		logging?: any;
+		migrationStorageTableSchema?: string;
+		migrationStorageTableName?: string;
 	},
 	enableLogging: boolean = false
 ) {
-	// avoid connection pinning inside lambda environment
-	const extraOptions = process.env.AWS_LAMBDA_FUNCTION_NAME
+	const logger = container.resolve<Logger>("Logger");
+	logger.module = "DB";
+
+	const isLambda = Boolean(process.env.AWS_LAMBDA_FUNCTION_NAME);
+
+	const lambdaDialectOptions = isLambda
 		? {
-				dialectOptions: {
-					clientMinMessages: "ignore", // disable SET query to avoid connection pinning
-				},
-				pool: {
-					max: 1,
-					min: 0,
-				},
-				bindParam: false, // use replacements instead of prepared statements to avoid connection pinning
-				standardConformingStrings: false, // disable SET query to avoid connection pinning
-				keepDefaultTimezone: true, // disable SET query to avoid connection pinning
+				clientMinMessages: "ignore",
+		  }
+		: {};
+
+	const lambdaOverrides = isLambda
+		? {
+				pool: { max: 1, min: 0 },
+				bindParam: false,
+				standardConformingStrings: false,
+				keepDefaultTimezone: true,
 		  }
 		: {};
 
 	const sequelize = new Sequelize({
 		dialect: "postgres",
 		dialectModule: pg,
-		...config,
-		...extraOptions,
+		host: config.host,
+		port: config.port,
+		username: config.username,
+		password: config.password,
+		database: config.database,
+		schema: config.schema,
+		pool: isLambda ? { ...lambdaOverrides.pool } : config.pool,
+		dialectOptions: {
+			...(config.dialectOptions ?? {}),
+			...(isLambda ? lambdaDialectOptions : {}),
+		},
+		benchmark: config.benchmark ?? true,
+		logging: false,
+		...(isLambda
+			? {
+					bindParam: lambdaOverrides.bindParam,
+					standardConformingStrings: lambdaOverrides.standardConformingStrings,
+					keepDefaultTimezone: lambdaOverrides.keepDefaultTimezone,
+			  }
+			: {}),
 	});
 
-	const logger = container.resolve<Logger>("Logger");
-	logger.module = "DB";
 	// @ts-ignore
 	sequelize.options.logging = enableLogging ? (msg) => logger.debug(msg) : false;
 
