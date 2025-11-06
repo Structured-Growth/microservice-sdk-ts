@@ -98,52 +98,170 @@ export class RedisCacheTransport implements CacheTransportInterface {
 	}
 
 	public async get<T = string>(key: string): Promise<T | null> {
-		const res = await (this.redis as any).get(this.k(key));
-		return this.maybeParse<T>(res);
+		try {
+			const res = await (this.redis as any).get(this.k(key));
+			return this.maybeParse<T>(res);
+		} catch (err: any) {
+			this.logger.error(`[RedisCacheTransport] get(${key}) failed:`, err);
+			return null;
+		}
 	}
 
 	public async set(key: string, value: string | object, ttlSec?: number): Promise<boolean> {
-		const k = this.k(key);
-		const v = this.toStr(value);
-		const res =
-			ttlSec && ttlSec > 0 ? await (this.redis as any).set(k, v, "EX", ttlSec) : await (this.redis as any).set(k, v);
-		return res === "OK";
+		try {
+			const k = this.k(key);
+			const v = this.toStr(value);
+
+			const hasTtl = Number.isFinite(ttlSec) && (ttlSec as number) > 0;
+			const ttl = hasTtl ? Math.floor(ttlSec as number) : undefined;
+
+			const res = hasTtl ? await (this.redis as any).set(k, v, "EX", ttl) : await (this.redis as any).set(k, v);
+
+			if (res !== "OK") {
+				this.logger.warn(`[RedisCacheTransport] set(${key}) returned non-OK: ${String(res)}`);
+				return false;
+			}
+			return true;
+		} catch (err: any) {
+			this.logger.error(`[RedisCacheTransport] set(${key}) failed`);
+			return false;
+		}
 	}
 
 	public async del(key: string): Promise<boolean> {
-		const res = await (this.redis as any).del(this.k(key));
-		return res > 0;
+		try {
+			const res = await (this.redis as any).del(this.k(key));
+
+			if (typeof res !== "number") {
+				this.logger.warn(`[RedisCacheTransport] del(${key}) returned unexpected type: ${typeof res}`);
+				return false;
+			}
+
+			return res > 0;
+		} catch (err: any) {
+			this.logger.error(`[RedisCacheTransport] del(${key}) failed`);
+			return false;
+		}
 	}
 
 	public async incrBy(key: string, increment = 1): Promise<number> {
-		return (this.redis as any).incrby(this.k(key), increment);
+		try {
+			const inc = Number.isFinite(increment) ? Math.floor(increment) : 1;
+
+			const newVal = await (this.redis as any).incrby(this.k(key), inc);
+
+			if (typeof newVal !== "number") {
+				this.logger.warn(`[RedisCacheTransport] incrBy(${key}, ${inc}) returned non-number: ${String(newVal)}`);
+				return NaN;
+			}
+
+			return newVal;
+		} catch (err: any) {
+			this.logger.error(`[RedisCacheTransport] incrBy(${key}, ${increment}) failed`);
+			return NaN;
+		}
 	}
 
 	public async expire(key: string, ttlSec: number): Promise<boolean> {
-		const res = await (this.redis as any).expire(this.k(key), ttlSec);
-		return res === 1;
+		try {
+			const hasTtl = Number.isFinite(ttlSec) && ttlSec > 0;
+			if (!hasTtl) {
+				this.logger.warn(`[RedisCacheTransport] expire(${key}) skipped due to invalid ttlSec: ${ttlSec}`);
+				return false;
+			}
+			const ttl = Math.floor(ttlSec);
+
+			const res = await (this.redis as any).expire(this.k(key), ttl);
+
+			if (res === 1) return true;
+
+			this.logger.info(`[RedisCacheTransport] expire(${key}, ${ttl}) returned 0 (key may not exist).`);
+			return false;
+		} catch (err: any) {
+			this.logger.error(`[RedisCacheTransport] expire(${key}, ${ttlSec}) failed`);
+			return false;
+		}
 	}
 
 	public async mget<T = string>(keys: string[]): Promise<(T | null)[]> {
-		if (keys.length === 0) return [];
-		const prefixed = keys.map((k) => this.k(k));
-		const res: (string | null)[] = await (this.redis as any).mget(prefixed);
-		return res.map((v) => this.maybeParse<T>(v));
+		if (!Array.isArray(keys) || keys.length === 0) return [];
+
+		try {
+			if (this.isCluster) {
+				const results = await Promise.all(keys.map((key) => (this.redis as any).get(this.k(key)).catch(() => null)));
+				return results.map((v) => this.maybeParse<T>(v));
+			}
+
+			const prefixed = keys.map((k) => this.k(k));
+			const res: unknown = await (this.redis as any).mget(prefixed);
+
+			if (!Array.isArray(res)) {
+				this.logger.warn(`[RedisCacheTransport] mget returned non-array response: ${typeof res}`);
+				return Array(keys.length).fill(null);
+			}
+
+			return (res as (string | null)[]).map((v) => this.maybeParse<T>(v));
+		} catch (err: any) {
+			this.logger.error(`[RedisCacheTransport] mget failed`);
+			return Array(keys.length).fill(null);
+		}
 	}
 
 	public async mset(entries: Record<string, string | object>, ttlSec?: number): Promise<boolean> {
-		const kv: string[] = [];
-		for (const [k, v] of Object.entries(entries)) kv.push(this.k(k), this.toStr(v));
-		if (kv.length === 0) return true;
+		try {
+			if (!entries || Object.keys(entries).length === 0) return true;
 
-		const ok = (await (this.redis as any).mset(kv)) === "OK";
-		if (!ok) return false;
+			const kv: string[] = [];
+			for (const [k, v] of Object.entries(entries)) {
+				try {
+					kv.push(this.k(k), this.toStr(v));
+				} catch (convErr: any) {
+					this.logger.warn(`[RedisCacheTransport] mset: failed to serialize value for key "${k}": ${convErr.message}`);
+				}
+			}
+			if (kv.length === 0) return true;
 
-		if (ttlSec && ttlSec > 0) {
-			const pipeline = (this.redis as any).pipeline();
-			for (const k of Object.keys(entries)) pipeline.expire(this.k(k), ttlSec);
-			await pipeline.exec();
+			const hasTtl = Number.isFinite(ttlSec) && (ttlSec as number) > 0;
+			const ttl = hasTtl ? Math.floor(ttlSec as number) : undefined;
+
+			if (this.isCluster) {
+				const results = await Promise.allSettled(
+					Object.entries(entries).map(([k, v]) =>
+						(this.redis as any).set(this.k(k), this.toStr(v), ...(ttl ? ["EX", ttl] : [])).catch((err: any) => {
+							this.logger.error(`[RedisCacheTransport] mset(cluster) set(${k}) failed:`, err);
+							return null;
+						})
+					)
+				);
+
+				const okCount = results.filter((r) => r.status === "fulfilled").length;
+				return okCount === Object.keys(entries).length;
+			}
+
+			const res = await (this.redis as any).mset(kv);
+			if (res !== "OK") {
+				this.logger.warn(`[RedisCacheTransport] mset returned unexpected response: ${String(res)}`);
+				return false;
+			}
+
+			if (ttl) {
+				const pipeline = (this.redis as any).pipeline();
+				for (const k of Object.keys(entries)) {
+					pipeline.expire(this.k(k), ttl);
+				}
+
+				const results = await pipeline.exec();
+				const hasError = results?.some(([err]: [any]) => !!err);
+
+				if (hasError) {
+					this.logger.warn(`[RedisCacheTransport] mset: one or more expire commands failed`);
+				}
+			}
+
+			return true;
+		} catch (err: any) {
+			this.logger.error(`[RedisCacheTransport] mset failed`);
+			return false;
 		}
-		return true;
 	}
 }
