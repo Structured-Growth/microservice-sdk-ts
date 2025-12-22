@@ -36,4 +36,40 @@ export class Cache {
 	public async mset(entries: Record<string, string | object>, ttlSec?: number): Promise<boolean> {
 		return this.transport.mset(entries, ttlSec);
 	}
+
+	public async setWithTags(key: string, value: string | object, tags: string[], ttlSec?: number): Promise<boolean> {
+		return this.transport.setWithTags(key, value, tags, ttlSec);
+	}
+
+	public async msetWithTags(
+		entries: Record<string, string | object>,
+		tags: string[],
+		ttlSec?: number
+	): Promise<boolean> {
+		return this.transport.msetWithTags(entries, tags, ttlSec);
+	}
+
+	public async addTags(key: string, tags: string[]): Promise<boolean> {
+		return this.transport.addTags(key, tags);
+	}
+
+	public async maddTags(keys: string[], tags: string[]): Promise<number> {
+		return this.transport.maddTags(keys, tags);
+	}
+
+	public async removeTags(key: string, tags: string[]): Promise<boolean> {
+		return this.transport.removeTags(key, tags);
+	}
+
+	public async delWithTags(key: string): Promise<boolean> {
+		return this.transport.delWithTags(key);
+	}
+
+	public async getKeysByTag(tag: string): Promise<string[]> {
+		return this.transport.getKeysByTag(tag);
+	}
+
+	public async invalidateTag(tag: string): Promise<number> {
+		return this.transport.invalidateTag(tag);
+	}
 }
