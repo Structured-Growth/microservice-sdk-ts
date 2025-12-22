@@ -97,6 +97,44 @@ export class RedisCacheTransport implements CacheTransportInterface {
 		}
 	}
 
+	private tagKey(tag: string): string {
+		const t = String(tag).trim();
+		return this.k(`tag:${t}`);
+	}
+
+	private tagRefsKey(key: string): string {
+		return this.k(`tagrefs:${key}`);
+	}
+
+	private normalizeTags(tags: string[]): string[] {
+		return (tags || []).map((t) => String(t).trim()).filter(Boolean);
+	}
+
+	private async cleanupTagsForKey(key: string, p?: any): Promise<void> {
+		const refsKey = this.tagRefsKey(key);
+		let tags: string[] = [];
+		try {
+			tags = (await (this.redis as any).smembers(refsKey).catch(() => [])) as string[];
+		} catch {
+			tags = [];
+		}
+
+		const pipe = p ?? (this.redis as any).pipeline();
+
+		if (Array.isArray(tags) && tags.length > 0) {
+			for (const tag of tags) {
+				pipe.srem(this.tagKey(tag), key);
+			}
+		}
+		pipe.del(refsKey);
+
+		if (!p) {
+			const res = await pipe.exec();
+			const hasErr = res?.some(([err]: [any]) => !!err);
+			if (hasErr) this.logger.warn(`[RedisCacheTransport] cleanupTagsForKey(${key}) pipeline had errors`);
+		}
+	}
+
 	public async get<T = string>(key: string): Promise<T | null> {
 		try {
 			const res = await (this.redis as any).get(this.k(key));
@@ -129,19 +167,7 @@ export class RedisCacheTransport implements CacheTransportInterface {
 	}
 
 	public async del(key: string): Promise<boolean> {
-		try {
-			const res = await (this.redis as any).del(this.k(key));
-
-			if (typeof res !== "number") {
-				this.logger.warn(`[RedisCacheTransport] del(${key}) returned unexpected type: ${typeof res}`);
-				return false;
-			}
-
-			return res > 0;
-		} catch (err: any) {
-			this.logger.error(`[RedisCacheTransport] del(${key}) failed`);
-			return false;
-		}
+		return this.delWithTags(key);
 	}
 
 	public async incrBy(key: string, increment = 1): Promise<number> {
@@ -172,13 +198,9 @@ export class RedisCacheTransport implements CacheTransportInterface {
 			const ttl = Math.floor(ttlSec);
 
 			const res = await (this.redis as any).expire(this.k(key), ttl);
-
-			if (res === 1) return true;
-
-			this.logger.info(`[RedisCacheTransport] expire(${key}, ${ttl}) returned 0 (key may not exist).`);
-			return false;
+			return res === 1;
 		} catch (err: any) {
-			this.logger.error(`[RedisCacheTransport] expire(${key}, ${ttlSec}) failed`);
+			this.logger.error(`[RedisCacheTransport] expire(${key}, ${ttlSec}) failed`, err);
 			return false;
 		}
 	}
@@ -211,16 +233,6 @@ export class RedisCacheTransport implements CacheTransportInterface {
 		try {
 			if (!entries || Object.keys(entries).length === 0) return true;
 
-			const kv: string[] = [];
-			for (const [k, v] of Object.entries(entries)) {
-				try {
-					kv.push(this.k(k), this.toStr(v));
-				} catch (convErr: any) {
-					this.logger.warn(`[RedisCacheTransport] mset: failed to serialize value for key "${k}": ${convErr.message}`);
-				}
-			}
-			if (kv.length === 0) return true;
-
 			const hasTtl = Number.isFinite(ttlSec) && (ttlSec as number) > 0;
 			const ttl = hasTtl ? Math.floor(ttlSec as number) : undefined;
 
@@ -238,6 +250,10 @@ export class RedisCacheTransport implements CacheTransportInterface {
 				return okCount === Object.keys(entries).length;
 			}
 
+			const kv: string[] = [];
+			for (const [k, v] of Object.entries(entries)) {
+				kv.push(this.k(k), this.toStr(v));
+			}
 			const res = await (this.redis as any).mset(kv);
 			if (res !== "OK") {
 				this.logger.warn(`[RedisCacheTransport] mset returned unexpected response: ${String(res)}`);
@@ -245,23 +261,237 @@ export class RedisCacheTransport implements CacheTransportInterface {
 			}
 
 			if (ttl) {
-				const pipeline = (this.redis as any).pipeline();
-				for (const k of Object.keys(entries)) {
-					pipeline.expire(this.k(k), ttl);
-				}
-
-				const results = await pipeline.exec();
-				const hasError = results?.some(([err]: [any]) => !!err);
-
-				if (hasError) {
-					this.logger.warn(`[RedisCacheTransport] mset: one or more expire commands failed`);
-				}
+				const p = (this.redis as any).pipeline();
+				for (const k of Object.keys(entries)) p.expire(this.k(k), ttl);
+				const results = await p.exec();
+				const hasErr = results?.some(([err]: [any]) => !!err);
+				if (hasErr) this.logger.warn(`[RedisCacheTransport] mset: one or more expire commands failed`);
 			}
 
 			return true;
 		} catch (err: any) {
-			this.logger.error(`[RedisCacheTransport] mset failed`);
+			this.logger.error(`[RedisCacheTransport] mset failed`, err);
 			return false;
+		}
+	}
+
+	public async setWithTags(key: string, value: string | object, tags: string[], ttlSec?: number): Promise<boolean> {
+		try {
+			const normTags = this.normalizeTags(tags);
+			const kData = this.k(key);
+			const v = this.toStr(value);
+
+			const hasTtl = Number.isFinite(ttlSec) && (ttlSec as number) > 0;
+			const ttl = hasTtl ? Math.floor(ttlSec as number) : undefined;
+
+			const p = (this.redis as any).pipeline();
+
+			await this.cleanupTagsForKey(key, p);
+
+			if (ttl) p.set(kData, v, "EX", ttl);
+			else p.set(kData, v);
+
+			if (normTags.length > 0) {
+				for (const tag of normTags) {
+					p.sadd(this.tagKey(tag), key);
+				}
+				p.sadd(this.tagRefsKey(key), ...normTags);
+
+				if (ttl) p.expire(this.tagRefsKey(key), ttl);
+			}
+
+			const res = await p.exec();
+			const hasErr = res?.some(([err]: [any]) => !!err);
+			if (hasErr) {
+				this.logger.warn(`[RedisCacheTransport] setWithTags(${key}) pipeline had errors`);
+				return false;
+			}
+			return true;
+		} catch (err: any) {
+			this.logger.error(`[RedisCacheTransport] setWithTags(${key}) failed:`, err);
+			return false;
+		}
+	}
+
+	public async msetWithTags(
+		entries: Record<string, string | object>,
+		tags: string[],
+		ttlSec?: number
+	): Promise<boolean> {
+		try {
+			if (!entries || Object.keys(entries).length === 0) return true;
+
+			const normTags = this.normalizeTags(tags);
+			const hasTtl = Number.isFinite(ttlSec) && (ttlSec as number) > 0;
+			const ttl = hasTtl ? Math.floor(ttlSec as number) : undefined;
+
+			const p = (this.redis as any).pipeline();
+
+			for (const [key, value] of Object.entries(entries)) {
+				await this.cleanupTagsForKey(key, p);
+
+				const kData = this.k(key);
+				const v = this.toStr(value);
+
+				if (ttl) p.set(kData, v, "EX", ttl);
+				else p.set(kData, v);
+
+				if (normTags.length > 0) {
+					for (const tag of normTags) p.sadd(this.tagKey(tag), key);
+					p.sadd(this.tagRefsKey(key), ...normTags);
+					if (ttl) p.expire(this.tagRefsKey(key), ttl);
+				}
+			}
+
+			const res = await p.exec();
+			const hasErr = res?.some(([err]: [any]) => !!err);
+			if (hasErr) {
+				this.logger.warn(`[RedisCacheTransport] msetWithTags pipeline had errors`);
+				return false;
+			}
+			return true;
+		} catch (err: any) {
+			this.logger.error(`[RedisCacheTransport] msetWithTags failed:`, err);
+			return false;
+		}
+	}
+
+	public async addTags(key: string, tags: string[]): Promise<boolean> {
+		try {
+			const normTags = this.normalizeTags(tags);
+			if (normTags.length === 0) return true;
+
+			const exists = await (this.redis as any).exists(this.k(key));
+			if (exists !== 1) return false;
+
+			const p = (this.redis as any).pipeline();
+			for (const tag of normTags) {
+				p.sadd(this.tagKey(tag), key);
+			}
+			p.sadd(this.tagRefsKey(key), ...normTags);
+
+			const res = await p.exec();
+			const hasErr = res?.some(([err]: [any]) => !!err);
+			return !hasErr;
+		} catch (err: any) {
+			this.logger.error(`[RedisCacheTransport] addTags(${key}) failed:`, err);
+			return false;
+		}
+	}
+
+	public async maddTags(keys: string[], tags: string[]): Promise<number> {
+		try {
+			const normTags = this.normalizeTags(tags);
+			if (!Array.isArray(keys) || keys.length === 0) return 0;
+			if (normTags.length === 0) return 0;
+
+			let count = 0;
+			const p = (this.redis as any).pipeline();
+
+			for (const key of keys) {
+				const exists = await (this.redis as any).exists(this.k(key)).catch(() => 0);
+				if (exists !== 1) continue;
+
+				for (const tag of normTags) p.sadd(this.tagKey(tag), key);
+				p.sadd(this.tagRefsKey(key), ...normTags);
+				count++;
+			}
+
+			if (count === 0) return 0;
+
+			const res = await p.exec();
+			const hasErr = res?.some(([err]: [any]) => !!err);
+			if (hasErr) this.logger.warn(`[RedisCacheTransport] maddTags pipeline had errors`);
+
+			return count;
+		} catch (err: any) {
+			this.logger.error(`[RedisCacheTransport] maddTags failed:`, err);
+			return 0;
+		}
+	}
+
+	public async removeTags(key: string, tags: string[]): Promise<boolean> {
+		try {
+			const normTags = this.normalizeTags(tags);
+			if (normTags.length === 0) return true;
+
+			const p = (this.redis as any).pipeline();
+			for (const tag of normTags) {
+				p.srem(this.tagKey(tag), key);
+			}
+			p.srem(this.tagRefsKey(key), ...normTags);
+
+			const res = await p.exec();
+			const hasErr = res?.some(([err]: [any]) => !!err);
+			return !hasErr;
+		} catch (err: any) {
+			this.logger.error(`[RedisCacheTransport] removeTags(${key}) failed:`, err);
+			return false;
+		}
+	}
+
+	public async delWithTags(key: string): Promise<boolean> {
+		try {
+			const p = (this.redis as any).pipeline();
+
+			p.del(this.k(key));
+
+			await this.cleanupTagsForKey(key, p);
+
+			const res = await p.exec();
+			const hasErr = res?.some(([err]: [any]) => !!err);
+			if (hasErr) {
+				this.logger.warn(`[RedisCacheTransport] delWithTags(${key}) pipeline had errors`);
+				return false;
+			}
+
+			return true;
+		} catch (err: any) {
+			this.logger.error(`[RedisCacheTransport] delWithTags(${key}) failed:`, err);
+			return false;
+		}
+	}
+
+	public async getKeysByTag(tag: string): Promise<string[]> {
+		try {
+			const t = String(tag).trim();
+			if (!t) return [];
+			const res = await (this.redis as any).smembers(this.tagKey(t));
+			return Array.isArray(res) ? res.map(String) : [];
+		} catch (err: any) {
+			this.logger.error(`[RedisCacheTransport] getKeysByTag(${tag}) failed:`, err);
+			return [];
+		}
+	}
+
+	public async invalidateTag(tag: string): Promise<number> {
+		try {
+			const keys = await this.getKeysByTag(tag);
+			const tKey = this.tagKey(tag);
+
+			if (keys.length === 0) {
+				await (this.redis as any).del(tKey).catch(() => null);
+				return 0;
+			}
+
+			const p = (this.redis as any).pipeline();
+
+			for (const key of keys) {
+				p.del(this.k(key));
+				p.srem(tKey, key);
+				p.del(this.tagRefsKey(key));
+			}
+
+			p.del(tKey);
+
+			const res = await p.exec();
+			const hasErr = res?.some(([err]: [any]) => !!err);
+			if (hasErr) this.logger.warn(`[RedisCacheTransport] invalidateTag(${tag}) pipeline had errors`);
+
+			return keys.length;
+		} catch (err: any) {
+			this.logger.error(`[RedisCacheTransport] invalidateTag(${tag}) failed:`, err);
+			return 0;
 		}
 	}
 }

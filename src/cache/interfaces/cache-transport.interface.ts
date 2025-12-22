@@ -6,4 +6,13 @@ export interface CacheTransportInterface {
 	expire(key: string, ttlSec: number): Promise<boolean>;
 	mget<T = string>(keys: string[]): Promise<(T | null)[]>;
 	mset(entries: Record<string, string | object>, ttlSec?: number): Promise<boolean>;
+
+	setWithTags(key: string, value: string | object, tags: string[], ttlSec?: number): Promise<boolean>;
+	msetWithTags(entries: Record<string, string | object>, tags: string[], ttlSec?: number): Promise<boolean>;
+	addTags(key: string, tags: string[]): Promise<boolean>;
+	maddTags(keys: string[], tags: string[]): Promise<number>;
+	removeTags(key: string, tags: string[]): Promise<boolean>;
+	delWithTags(key: string): Promise<boolean>;
+	getKeysByTag(tag: string): Promise<string[]>;
+	invalidateTag(tag: string): Promise<number>;
 }
