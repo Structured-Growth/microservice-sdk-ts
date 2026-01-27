@@ -36,31 +36,10 @@ export function handleRequest(
 			const startTime = new Date().getTime();
 			const { params, query, body } = req;
 			const metadata = Reflect.getMetadata(`__action:${method}`, controllerClass.prototype);
-
-			const proto = controllerClass.prototype;
-
-			logger.debug("handleRequest method:", method);
-			logger.debug("meta(__action:method) =", Reflect.getMetadata(`__action:${method}`, proto));
-			logger.debug("metaKeys(proto) =", Reflect.getMetadataKeys(proto));
-
-			logger.debug("metaKeys(proto, method) =", Reflect.getMetadataKeys(proto, method));
-			logger.debug("tsoa operationId =", Reflect.getMetadata("tsoa:operationId", proto, method));
 			const maskFields = metadata?.maskFields || [];
 			const hashFields = metadata?.hashFields || [];
 			const safePayload = applySensitiveFieldTransformations({ body, query, params }, maskFields, hashFields);
 			let msg = options.logRequestBody ? JSON.stringify({ query: safePayload.query, body: safePayload.body }) : "";
-
-			const opId = Reflect.getMetadata("tsoa:operationId", proto, method);
-
-			logger.debug("meta(__action:opId) =", opId ? Reflect.getMetadata(`__action:${opId}`, proto) : null);
-			logger.debug(
-				"meta(__action:opId, method) =",
-				opId ? Reflect.getMetadata(`__action:${opId}`, proto, method) : null
-			);
-			logger.debug("meta(__action:method, method) =", Reflect.getMetadata(`__action:${method}`, proto, method));
-
-			logger.debug("controllerClass =", controllerClass?.name, "method =", method);
-			logger.debug("controller has method?", typeof controllerClass.prototype?.[method]);
 
 			let result;
 
