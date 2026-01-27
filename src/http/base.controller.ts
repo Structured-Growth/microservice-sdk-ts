@@ -80,6 +80,10 @@ export abstract class BaseController {
 		const prototype = Object.getPrototypeOf(this);
 		const action = Reflect.getMetadata(`__action:${actionName}`, prototype);
 
+		this.logger.debug("authorize actionName:", actionName);
+		this.logger.debug("authorize action meta:", action);
+		this.logger.debug("authorize action.resources:", action?.resources);
+
 		if (!action) {
 			throw new ServerError("Action is not described. Use DescribeAction decorator.");
 		}
