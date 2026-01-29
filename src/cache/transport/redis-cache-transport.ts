@@ -456,8 +456,39 @@ export class RedisCacheTransport implements CacheTransportInterface {
 		try {
 			const t = String(tag).trim();
 			if (!t) return [];
-			const res = await (this.redis as any).smembers(this.tagKey(t));
-			return Array.isArray(res) ? res.map(String) : [];
+
+			const tKey = this.tagKey(t);
+
+			const res = await (this.redis as any).smembers(tKey);
+			const keys = Array.isArray(res) ? res.map(String).filter(Boolean) : [];
+			if (keys.length === 0) return [];
+
+			const alive: string[] = [];
+			const dead: string[] = [];
+
+			if (this.isCluster) {
+				for (const key of keys) {
+					const ex = await (this.redis as any).exists(this.k(key)).catch(() => 0);
+					if (ex === 1) alive.push(key);
+					else dead.push(key);
+				}
+			} else {
+				const p = (this.redis as any).pipeline();
+				for (const key of keys) p.exists(this.k(key));
+
+				const execRes = await p.exec();
+				for (let i = 0; i < keys.length; i++) {
+					const [, ex] = execRes?.[i] ?? [];
+					if (ex === 1) alive.push(keys[i]);
+					else dead.push(keys[i]);
+				}
+			}
+
+			if (dead.length > 0) {
+				await (this.redis as any).srem(tKey, ...dead).catch(() => null);
+			}
+
+			return alive;
 		} catch (err: any) {
 			this.logger.error(`[RedisCacheTransport] getKeysByTag(${tag}) failed:`, err);
 			return [];
