@@ -53,9 +53,11 @@ export { smsProviders, SnsSmsProvider, AliyunSmsProvider } from "./sms/providers
 export { SmsService } from "./sms/sms.service";
 export { SmsProviderInterface } from "./sms/interfaces/sms-provider.interface";
 
-export { Cache } from "./cache/cache";
+export { CacheService } from "./cache/cache";
 export { MemoryCacheTransport } from "./cache/transport/memory-cache-transport";
 export { RedisCacheTransport } from "./cache/transport/redis-cache-transport";
+export { NoCacheTransport } from "./cache/transport/no-cache-transport";
+export { CacheInterface } from "./cache/interfaces/cache.interface";
 export { cacheTransports } from "./cache/transport";
 
 export { eventBusProviders, TestEventbusProvider, AwsEventBridgeEventbusProvider } from "./eventbus/providers/index";
