@@ -497,26 +497,48 @@ export class RedisCacheTransport implements CacheTransportInterface {
 
 	public async invalidateTag(tag: string): Promise<number> {
 		try {
-			const keys = await this.getKeysByTag(tag);
-			const tKey = this.tagKey(tag);
+			const t = String(tag).trim();
+			const keys = await this.getKeysByTag(t);
+			const tKey = this.tagKey(t);
 
 			if (keys.length === 0) {
 				await (this.redis as any).del(tKey).catch(() => null);
 				return 0;
 			}
 
-			const p = (this.redis as any).pipeline();
-
+			const p1 = (this.redis as any).pipeline();
 			for (const key of keys) {
-				p.del(this.k(key));
-				p.srem(tKey, key);
-				p.del(this.tagRefsKey(key));
+				p1.smembers(this.tagRefsKey(key));
+			}
+			const res1 = await p1.exec();
+
+			const keyToTags = new Map<string, string[]>();
+			for (let i = 0; i < keys.length; i++) {
+				const key = keys[i];
+				const [err, tags] = res1?.[i] ?? [];
+				const list = !err && Array.isArray(tags) ? tags.map(String).filter(Boolean) : [];
+				keyToTags.set(key, list);
 			}
 
-			p.del(tKey);
+			const p2 = (this.redis as any).pipeline();
 
-			const res = await p.exec();
-			const hasErr = res?.some(([err]: [any]) => !!err);
+			for (const key of keys) {
+				p2.del(this.k(key));
+
+				const refTags = keyToTags.get(key) ?? [];
+				for (const refTag of refTags) {
+					p2.srem(this.tagKey(refTag), key);
+				}
+
+				p2.del(this.tagRefsKey(key));
+
+				p2.srem(tKey, key);
+			}
+
+			p2.del(tKey);
+
+			const res2 = await p2.exec();
+			const hasErr = res2?.some(([err]: [any]) => !!err);
 			if (hasErr) this.logger.warn(`[RedisCacheTransport] invalidateTag(${tag}) pipeline had errors`);
 
 			return keys.length;
