@@ -3,10 +3,7 @@ import { set, get, size, omitBy, isUndefined } from "lodash";
 import { asyncLocalStorage } from "../common/async-local-storage";
 import { signedInternalFetch } from "../fetch";
 import { ServerError } from "../common/errors/server.error";
-import {
-	AccountApiCustomFieldValidateBody,
-	AccountApiCustomFieldValidateResponse,
-} from "../interfaces";
+import { AccountApiCustomFieldValidateBody, AccountApiCustomFieldValidateResponse } from "../interfaces";
 import * as fs from "fs";
 import * as path from "path";
 import * as defaultJoiTranslations from "../locale/joi.json";
