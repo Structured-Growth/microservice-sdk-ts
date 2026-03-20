@@ -2,6 +2,11 @@ import { ObjectSchema } from "joi";
 import { set, get, size, omitBy, isUndefined } from "lodash";
 import { asyncLocalStorage } from "../common/async-local-storage";
 import { signedInternalFetch } from "../fetch";
+import { ServerError } from "../common/errors/server.error";
+import {
+	AccountApiCustomFieldValidateBody,
+	AccountApiCustomFieldValidateResponse,
+} from "../interfaces";
 import * as fs from "fs";
 import * as path from "path";
 import * as defaultJoiTranslations from "../locale/joi.json";
@@ -82,6 +87,55 @@ export function formatMessage(template: string, context: Record<string, any>): s
 		const value = get(context, key);
 		return value !== undefined ? String(value) : "";
 	});
+}
+
+export async function validateCustomFields(
+	body: AccountApiCustomFieldValidateBody
+): Promise<AccountApiCustomFieldValidateResponse> {
+	if (!process.env.ACCOUNT_API_URL) {
+		throw new ServerError("ACCOUNT_API_URL is not set");
+	}
+
+	let response: Response;
+
+	try {
+		response = await signedInternalFetch(`${process.env.ACCOUNT_API_URL}/v1/resolver/validate`, {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify(body),
+		});
+	} catch (error) {
+		throw new ServerError(`Account API is not available: ${error.message}`);
+	}
+
+	let payload: unknown = null;
+
+	try {
+		payload = await response.json();
+	} catch {
+		if (response.ok) {
+			throw new ServerError("Bad response from Account API validation endpoint");
+		}
+	}
+
+	if (!response.ok) {
+		throw new ServerError(
+			(payload as { message?: string } | null)?.message ||
+				`Account API validation request failed with status ${response.status}`
+		);
+	}
+
+	if (
+		!payload ||
+		typeof payload !== "object" ||
+		typeof (payload as AccountApiCustomFieldValidateResponse).valid !== "boolean"
+	) {
+		throw new ServerError("Bad response from Account API validation endpoint");
+	}
+
+	return payload as AccountApiCustomFieldValidateResponse;
 }
 
 export async function validate(
