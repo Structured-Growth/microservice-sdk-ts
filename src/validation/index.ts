@@ -3,4 +3,5 @@ export * from "./validators";
 import * as joi from "joi";
 
 export { joi };
-export { validate } from "./validate";
+export { validate, validateCustomFields } from "./validate";
+export { CustomFieldValidateBody, CustomFieldValidateResponse } from "../interfaces";

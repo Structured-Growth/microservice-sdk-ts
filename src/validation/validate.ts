@@ -2,6 +2,8 @@ import { ObjectSchema } from "joi";
 import { set, get, size, omitBy, isUndefined } from "lodash";
 import { asyncLocalStorage } from "../common/async-local-storage";
 import { signedInternalFetch } from "../fetch";
+import { ServerError } from "../common/errors/server.error";
+import { CustomFieldValidateBody, CustomFieldValidateResponse } from "../interfaces";
 import * as fs from "fs";
 import * as path from "path";
 import * as defaultJoiTranslations from "../locale/joi.json";
@@ -82,6 +84,93 @@ export function formatMessage(template: string, context: Record<string, any>): s
 		const value = get(context, key);
 		return value !== undefined ? String(value) : "";
 	});
+}
+
+export async function validateCustomFields(body: CustomFieldValidateBody): Promise<CustomFieldValidateResponse> {
+	if (!process.env.ACCOUNT_API_URL) {
+		throw new ServerError("ACCOUNT_API_URL is not set");
+	}
+
+	let response: Response;
+	const validationUrl = `${process.env.ACCOUNT_API_URL}/v1/resolver/validate`;
+
+	try {
+		response = await signedInternalFetch(validationUrl, {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify(body),
+		});
+	} catch (error) {
+		console.error("[validateCustomFields] Request failed", {
+			url: validationUrl,
+			body,
+			error: error?.message,
+		});
+		throw new ServerError(`Validation service is not available: ${error.message}`);
+	}
+
+	let responseText = "";
+
+	try {
+		responseText = await response.text();
+	} catch {
+		console.error("[validateCustomFields] Failed to read response body", {
+			url: validationUrl,
+			status: response.status,
+			statusText: response.statusText,
+		});
+		throw new ServerError("Failed to read validation response");
+	}
+
+	let payload: unknown = null;
+
+	if (responseText) {
+		try {
+			payload = JSON.parse(responseText);
+		} catch {
+			console.error("[validateCustomFields] Failed to parse response JSON", {
+				url: validationUrl,
+				status: response.status,
+				statusText: response.statusText,
+				responseText,
+			});
+		}
+	}
+
+	if (!response.ok) {
+		console.error("[validateCustomFields] Validation request failed", {
+			url: validationUrl,
+			status: response.status,
+			statusText: response.statusText,
+			body,
+			payload,
+			responseText,
+		});
+		throw new ServerError(
+			(payload as { message?: string } | null)?.message || `Validation request failed with status ${response.status}`
+		);
+	}
+
+	if (
+		!responseText ||
+		!payload ||
+		typeof payload !== "object" ||
+		typeof (payload as CustomFieldValidateResponse).valid !== "boolean"
+	) {
+		console.error("[validateCustomFields] Bad validation response", {
+			url: validationUrl,
+			status: response.status,
+			statusText: response.statusText,
+			body,
+			payload,
+			responseText,
+		});
+		throw new ServerError("Bad response from validation endpoint");
+	}
+
+	return payload as CustomFieldValidateResponse;
 }
 
 export async function validate(

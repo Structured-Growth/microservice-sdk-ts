@@ -34,8 +34,10 @@ export { BelongsToOrgInterface } from "./interfaces/belongs-to-org.interface";
 export { DefaultModelInterface } from "./interfaces/default-model.interface";
 export { RepositoryInterface } from "./interfaces/repository.interface";
 export { RegionEnum } from "./interfaces/region.enum";
+export { CustomFieldValidateBody } from "./interfaces/custom-field-validate-body.interface";
+export { CustomFieldValidateResponse } from "./interfaces/custom-field-validate-response.interface";
 export { webServer } from "./http/web-server";
-export { validate } from "./validation/validate";
+export { validate, validateCustomFields } from "./validation/validate";
 export { SagaStep, SagaOrchestrator } from "./saga/saga-orchestrator";
 
 export { keyValueStorageDrivers, DynamoDbKvStorageDriver } from "./key-value/drivers";
