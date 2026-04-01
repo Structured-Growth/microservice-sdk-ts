@@ -24,6 +24,7 @@ export class AuthTestService implements AuthServiceInterface {
 			return {
 				id: 1,
 				orgId: 1,
+				parentOrgIds: [],
 				region: RegionEnum.US,
 				type: PrincipalTypeEnum.ACCOUNT,
 				firstName: "Test",
