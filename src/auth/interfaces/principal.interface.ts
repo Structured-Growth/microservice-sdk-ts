@@ -4,7 +4,7 @@ import { PrincipalTypeEnum } from "./principal-type.enum";
 export interface PrincipalInterface {
 	id: number | string;
 	orgId: number;
-	orgIds?: number[];
+	parentOrgIds: number[];
 	region: RegionEnum;
 	type: PrincipalTypeEnum;
 	arn: string;
