@@ -42,6 +42,7 @@ export class AuthService implements AuthServiceInterface {
 		const principal: PrincipalInterface = {
 			id: this.appPrefix,
 			orgId: null,
+			parentOrgIds: [],
 			region: null,
 			type: PrincipalTypeEnum.SERVICE,
 			arn: this.appPrefix,
