@@ -22,6 +22,10 @@ export abstract class BaseController {
 	protected authService: AuthServiceInterface;
 	protected policyService: PolicyService;
 	protected principal: PrincipalInterface | GuestPrincipalInterface = {
+		id: null,
+		orgId: null,
+		parentOrgIds: [],
+		region: null,
 		arn: "*",
 		type: PrincipalTypeEnum.GUEST,
 	};
@@ -51,6 +55,10 @@ export abstract class BaseController {
 			const token = authHeader.substring(7); // remove "Bearer "
 			if (!token) {
 				this.principal = {
+					id: null,
+					orgId: null,
+					parentOrgIds: [],
+					region: null,
 					arn: "*",
 					type: PrincipalTypeEnum.GUEST,
 				};
@@ -61,6 +69,10 @@ export abstract class BaseController {
 		} catch (e) {
 			this.logger.info(`Authentication failed: ${e.message}`);
 			this.principal = {
+				id: null,
+				orgId: null,
+				parentOrgIds: [],
+				region: null,
 				arn: "*",
 				type: PrincipalTypeEnum.GUEST,
 			};
