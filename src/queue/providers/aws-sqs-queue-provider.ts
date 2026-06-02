@@ -60,7 +60,7 @@ export class AwsSqsQueueProvider implements QueueProviderInterface {
 				const { Type, source, ...event } = JSON.parse(message.Body);
 				// handle SNS notifications
 				if (Type === "Notification") {
-					handler(
+					await handler(
 						{
 							source: "sns.amazonaws.com",
 							subject: "notification",
@@ -70,7 +70,7 @@ export class AwsSqsQueueProvider implements QueueProviderInterface {
 					);
 					// handle EventBridge events
 				} else {
-					handler(
+					await handler(
 						{
 							source,
 							subject: event["detail-type"],
