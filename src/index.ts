@@ -13,6 +13,7 @@ export { DescribeAction } from "./decorators/describe-action";
 export { DescribeResource } from "./decorators/describe-resource";
 export { MaskFields } from "./decorators/mask-fields";
 export { HashFields } from "./decorators/hash-fields";
+export { Emits } from "./decorators/emits";
 export { ValidateFuncArgs } from "./validation/validation.decorator";
 
 export { NotFoundError } from "./common/errors/not-found.error";
@@ -73,6 +74,7 @@ export { QueueInterface } from "./queue/interfaces/queue.interface";
 export { QueueProviderInterface } from "./queue/interfaces/queue-provider.interface";
 
 export * from "./events";
+export * from "./emits";
 export * from "./auth";
 export * from "./fetch";
 
