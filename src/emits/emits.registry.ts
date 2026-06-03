@@ -29,10 +29,7 @@ function upsertEmit(target: Function, emit: EmitRegistrationInterface) {
 	emitsRegistry.set(
 		target,
 		uniqBy(
-			[
-				...registered,
-				emit,
-			],
+			[...registered, emit],
 			(item) => `${item.className || ""}:${item.targetName}:${item.event}:${item.payloadSchema || ""}`
 		)
 	);
