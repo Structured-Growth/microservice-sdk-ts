@@ -28,10 +28,7 @@ function upsertEmit(target: Function, emit: EmitRegistrationInterface) {
 	const registered = emitsRegistry.get(target) || [];
 	emitsRegistry.set(
 		target,
-		uniqBy(
-			[...registered, emit],
-			(item) => `${item.className || ""}:${item.targetName}:${item.event}`
-		)
+		uniqBy([...registered, emit], (item) => `${item.className || ""}:${item.targetName}:${item.event}`)
 	);
 }
 
