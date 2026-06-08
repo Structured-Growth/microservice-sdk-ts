@@ -10,14 +10,13 @@ function registerMethodEmit(target: any, propertyKey: string | symbol, descripto
 	return targetFn;
 }
 
-export function Emits(event: string, payloadSchema?: string): MethodDecorator {
+export function Emits(event: string): MethodDecorator {
 	return function (target: any, propertyKey: string | symbol, descriptor: PropertyDescriptor) {
 		const targetFn = registerMethodEmit(target, propertyKey, descriptor);
 
 		if (typeof targetFn === "function") {
 			registerEmit(targetFn, {
 				event,
-				payloadSchema,
 				targetName: String(propertyKey),
 				className: target?.constructor?.name,
 			});
