@@ -10,7 +10,7 @@ function registerMethodEmit(target: any, propertyKey: string | symbol, descripto
 	return targetFn;
 }
 
-export function Emits(event: string): MethodDecorator {
+export function Emits<T = unknown>(event: string): MethodDecorator {
 	return function (target: any, propertyKey: string | symbol, descriptor: PropertyDescriptor) {
 		const targetFn = registerMethodEmit(target, propertyKey, descriptor);
 
