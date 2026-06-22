@@ -6,6 +6,8 @@ import { LoggerInterface } from "../../logger/interfaces/logger.interface";
 import { ServerError } from "../../common/errors/server.error";
 import { LoggerTransform } from "../../logger/log-context.transform";
 import { Message } from "aws-sdk/clients/sqs";
+import { SQSClient } from "@aws-sdk/client-sqs";
+import { buildAwsClientConfig } from "../../common/aws-client-config";
 
 @injectable()
 export class AwsSqsQueueProvider implements QueueProviderInterface {
@@ -23,9 +25,7 @@ export class AwsSqsQueueProvider implements QueueProviderInterface {
 			throw new ServerError("appPrefix must be defined");
 		}
 
-		let sqs = new Sqs({
-			region: this.region,
-		});
+		let sqs = new Sqs(buildAwsClientConfig(this.region, "AWS_SQS_ENDPOINT"));
 
 		if (!this.appPrefix) {
 			throw new ServerError("appPrefix must be defined");
@@ -55,6 +55,7 @@ export class AwsSqsQueueProvider implements QueueProviderInterface {
 		const consumer = Consumer.create({
 			region: this.region,
 			queueUrl: queueName,
+			sqs: new SQSClient(buildAwsClientConfig(this.region, "AWS_SQS_ENDPOINT")),
 			handleMessage: async (message) => {
 				this.logger.debug(JSON.stringify(message));
 				const { Type, source, ...event } = JSON.parse(message.Body);

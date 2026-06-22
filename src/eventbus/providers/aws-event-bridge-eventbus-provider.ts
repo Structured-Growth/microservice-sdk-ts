@@ -4,6 +4,7 @@ import { EventbusProviderInterface } from "../interfaces/eventbus-provider.inter
 import { LoggerInterface } from "../../logger/interfaces/logger.interface";
 import { ServerError } from "../../common/errors/server.error";
 import { LoggerTransform } from "../../logger/log-context.transform";
+import { buildAwsClientConfig } from "../../common/aws-client-config";
 
 @injectable()
 export class AwsEventBridgeEventbusProvider implements EventbusProviderInterface {
@@ -18,7 +19,7 @@ export class AwsEventBridgeEventbusProvider implements EventbusProviderInterface
 	public async publish(subject: string, message: object): Promise<boolean> {
 		this.logger.info(`Sending event: ${subject}`);
 
-		let eventBridge = new EventBridge({ region: this.region });
+		let eventBridge = new EventBridge(buildAwsClientConfig(this.region, "AWS_EVENTBRIDGE_ENDPOINT"));
 
 		if (!this.appPrefix) {
 			throw new ServerError("appPrefix must be defined");
