@@ -5,9 +5,13 @@ import { EventInterface } from "../events";
 
 @injectable()
 export class EventbusService implements EventbusInterface {
-	constructor(@inject("EventbusProvider") private eventbusProvider: EventbusProviderInterface) {}
+	constructor(
+		@inject("EventbusProvider") private eventbusProvider: EventbusProviderInterface,
+		@inject("appPrefix") private appPrefix: string
+	) {}
 
 	public async publish(event: EventInterface): Promise<boolean> {
-		return this.eventbusProvider.publish(event.arn, event.data);
+		const arn = event.arn.startsWith(this.appPrefix) ? event.arn : `${this.appPrefix}:${event.arn}`;
+		return this.eventbusProvider.publish(arn, event.data, event.resources);
 	}
 }

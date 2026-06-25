@@ -13,7 +13,7 @@ export class TestEventbusProvider implements EventbusProviderInterface {
 		private logger: LoggerInterface
 	) {}
 
-	public async publish(subject: string, message: object): Promise<boolean> {
+	public async publish(subject: string, message: object, resources?: string[]): Promise<boolean> {
 		this.logger.info(`Sending event (imitation): ${subject}`);
 
 		if (!this.appPrefix) {
