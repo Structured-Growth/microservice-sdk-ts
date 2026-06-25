@@ -18,8 +18,8 @@ export class AwsSqsQueueProvider implements QueueProviderInterface {
 		private logger: LoggerInterface
 	) {}
 
-	public async publish(queueName: string, subject: string, message: object): Promise<boolean> {
-		this.logger.info(`Sending event: ${subject}`);
+	public async publish(queueName: string, subject: string, message: object, resources?: string[]): Promise<boolean> {
+		this.logger.info(`Sending event ${subject} to ${queueName}`);
 
 		if (!this.appPrefix) {
 			throw new ServerError("appPrefix must be defined");
@@ -34,7 +34,7 @@ export class AwsSqsQueueProvider implements QueueProviderInterface {
 		const result = await sqs
 			.sendMessage({
 				QueueUrl: queueName,
-				MessageBody: JSON.stringify({ subject, message }),
+				MessageBody: JSON.stringify({ subject, message, resources }),
 			})
 			.promise();
 
@@ -48,6 +48,7 @@ export class AwsSqsQueueProvider implements QueueProviderInterface {
 				source: string;
 				subject: string;
 				message: object;
+				resources?: string[];
 			},
 			event?: Message
 		) => Promise<void> | void
@@ -57,8 +58,10 @@ export class AwsSqsQueueProvider implements QueueProviderInterface {
 			queueUrl: queueName,
 			sqs: new SQSClient(buildAwsClientConfig(this.region, "AWS_SQS_ENDPOINT")),
 			handleMessage: async (message) => {
-				this.logger.debug(JSON.stringify(message));
 				const { Type, source, ...event } = JSON.parse(message.Body);
+				const subject = event["detail-type"] || event["subject"];
+				this.logger.debug(`Event received: ${subject} from ${source}`);
+
 				// handle SNS notifications
 				if (Type === "Notification") {
 					await handler(
@@ -66,6 +69,7 @@ export class AwsSqsQueueProvider implements QueueProviderInterface {
 							source: "sns.amazonaws.com",
 							subject: "notification",
 							message: JSON.parse(event["Message"]),
+							resources: event["resources"],
 						},
 						message
 					);
@@ -74,8 +78,9 @@ export class AwsSqsQueueProvider implements QueueProviderInterface {
 					await handler(
 						{
 							source,
-							subject: event["detail-type"],
-							message: event["detail"],
+							subject,
+							message: event["detail"] || event["message"],
+							resources: event["resources"],
 						},
 						message
 					);
