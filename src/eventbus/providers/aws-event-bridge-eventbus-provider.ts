@@ -37,7 +37,7 @@ export class AwsEventBridgeEventbusProvider implements EventbusProviderInterface
 						Source: this.appPrefix,
 						DetailType: subject,
 						Detail: JSON.stringify(message),
-						Resources: resources
+						Resources: resources,
 					},
 				],
 			})
