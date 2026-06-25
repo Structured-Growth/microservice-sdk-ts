@@ -1,9 +1,11 @@
 import { ObjectSchema } from "joi";
+import { container } from "tsyringe";
 import { set, get, size, omitBy, isUndefined } from "lodash";
 import { asyncLocalStorage } from "../common/async-local-storage";
 import { signedInternalFetch } from "../fetch";
 import { ServerError } from "../common/errors/server.error";
 import { CustomFieldValidateBody, CustomFieldValidateResponse } from "../interfaces";
+import { Logger } from "../logger";
 import * as fs from "fs";
 import * as path from "path";
 import * as defaultJoiTranslations from "../locale/joi.json";
@@ -11,6 +13,12 @@ import * as defaultJoiTranslations from "../locale/joi.json";
 const translationCache: Record<string, { client: object }> = {};
 const translationCacheExpiration: Record<string, number> = {};
 const translationFetching: Record<string, Promise<void> | null> = {};
+
+function getLogger(): Logger {
+	const logger = container.resolve<Logger>("Logger");
+	logger.module = "Validation";
+	return logger;
+}
 
 function fetchWithTimeout<T>(promise: Promise<T>, timeout: number): Promise<T> {
 	return Promise.race([
@@ -73,7 +81,7 @@ function loadLocalTranslations(defaultLocale: string): {
 		joiTranslations = defaultJoiTranslations;
 		clientTranslations = JSON.parse(fs.readFileSync(clientPath, "utf-8"));
 	} catch (err) {
-		console.log("Error reading local translation files:", err);
+		getLogger().error("Error reading local translation files:", err);
 	}
 
 	return { joiTranslations, clientTranslations };
@@ -103,7 +111,7 @@ export async function validateCustomFields(body: CustomFieldValidateBody): Promi
 			body: JSON.stringify(body),
 		});
 	} catch (error) {
-		console.error("[validateCustomFields] Request failed", {
+		getLogger().error("Request failed", {
 			url: validationUrl,
 			body,
 			error: error?.message,
@@ -116,7 +124,7 @@ export async function validateCustomFields(body: CustomFieldValidateBody): Promi
 	try {
 		responseText = await response.text();
 	} catch {
-		console.error("[validateCustomFields] Failed to read response body", {
+		getLogger().error("Failed to read response body", {
 			url: validationUrl,
 			status: response.status,
 			statusText: response.statusText,
@@ -130,7 +138,7 @@ export async function validateCustomFields(body: CustomFieldValidateBody): Promi
 		try {
 			payload = JSON.parse(responseText);
 		} catch {
-			console.error("[validateCustomFields] Failed to parse response JSON", {
+			getLogger().error("Failed to parse response JSON", {
 				url: validationUrl,
 				status: response.status,
 				statusText: response.statusText,
@@ -140,7 +148,7 @@ export async function validateCustomFields(body: CustomFieldValidateBody): Promi
 	}
 
 	if (!response.ok) {
-		console.error("[validateCustomFields] Validation request failed", {
+		getLogger().error("Validation request failed", {
 			url: validationUrl,
 			status: response.status,
 			statusText: response.statusText,
@@ -159,7 +167,7 @@ export async function validateCustomFields(body: CustomFieldValidateBody): Promi
 		typeof payload !== "object" ||
 		typeof (payload as CustomFieldValidateResponse).valid !== "boolean"
 	) {
-		console.error("[validateCustomFields] Bad validation response", {
+		getLogger().error("Bad validation response", {
 			url: validationUrl,
 			status: response.status,
 			statusText: response.statusText,
@@ -200,14 +208,14 @@ export async function validate(
 		process.env.TRANSLATE_API_URL.trim() === "" ||
 		!process.env.TRANSLATE_API_CLIENT_ID
 	) {
-		console.info("Skipping remote translation fetch: TRANSLATE_API_URL is empty");
+		getLogger().warn("Skipping remote translation fetch: TRANSLATE_API_URL is empty");
 		translations = useLocalTranslations();
 	} else {
 		try {
 			const { client } = await loadValidationTranslations(locale);
 			translations = client;
 		} catch (err) {
-			console.log("Failed to load remote translations, falling back to local:", err);
+			getLogger().error("Failed to load remote translations, falling back to local:", err);
 			translations = useLocalTranslations();
 		}
 	}
