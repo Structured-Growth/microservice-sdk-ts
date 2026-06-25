@@ -1,6 +1,6 @@
 {
   "name": "@structured-growth/microservice-sdk",
-  "version": "1.63.0",
+  "version": "1.0.0",
   "description": "",
   "main": ".dist/index",
   "scripts": {
