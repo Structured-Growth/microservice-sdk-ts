@@ -6,7 +6,8 @@
   "scripts": {
     "build": "tsc --project tsconfig.build.json",
     "dev": "tsc --watch",
-    "test": "ts-node test/test.ts"
+    "test": "ts-node test/test.ts",
+		"prettier": "prettier --check src"
   },
   "author": "Structured Growth",
   "license": "MIT",

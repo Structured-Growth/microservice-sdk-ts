@@ -1,2 +1,3 @@
-export { EmitRegistrationInterface } from "./emit-registration.interface";
-export { registerEmit, getRegisteredEmits, clearRegisteredEmits } from "./emits.registry";
+export { generateEmitsManifest } from "./generate-emits-manifest";
+export { readGeneratedEmitsManifest } from "./read-emits-manifest";
+export { EmitsManifestEntryInterface } from "./emits-manifest.interface";
