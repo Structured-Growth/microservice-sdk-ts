@@ -79,8 +79,8 @@ export function handleRequest(
 			} finally {
 				const endTime = new Date().getTime();
 				const principal = controller.principal?.arn ?? "unknown";
-
-				logger.debug(
+				const logLevel = req.statusCode >= 500 ? "error" : req.statusCode >= 400 ? "warn" : "info";
+				logger[logLevel](
 					req.method,
 					res.statusCode,
 					req.path,
