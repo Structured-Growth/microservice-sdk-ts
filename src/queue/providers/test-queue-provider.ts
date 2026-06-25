@@ -31,7 +31,12 @@ export class TestQueueProvider implements QueueProviderInterface {
 
 	public subscribe(
 		queueName: string,
-		handler: (message: { source: string; subject: string; message: object }) => Promise<void> | void
+		handler: (message: {
+			source: string;
+			subject: string;
+			message: object;
+			resources?: string[];
+		}) => Promise<void> | void
 	): void {
 		return undefined;
 	}

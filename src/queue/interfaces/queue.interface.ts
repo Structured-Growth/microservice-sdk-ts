@@ -4,7 +4,7 @@ export interface QueueInterface {
 	/**
 	 * Publish a job
 	 */
-	publish(queueName: string, subject: string, message: object): Promise<boolean>;
+	publish(queueName: string, subject: string, message: object, resources?: string[]): Promise<boolean>;
 
 	/**
 	 * Subscribe to new jobs
@@ -16,6 +16,7 @@ export interface QueueInterface {
 				source: string;
 				subject: string;
 				message: object;
+				resources?: string[];
 			},
 			event?: Message
 		) => Promise<void> | void

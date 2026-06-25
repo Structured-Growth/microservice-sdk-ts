@@ -16,7 +16,7 @@ export class AwsEventBridgeEventbusProvider implements EventbusProviderInterface
 		private logger: LoggerInterface
 	) {}
 
-	public async publish(subject: string, message: object): Promise<boolean> {
+	public async publish(subject: string, message: object, resources?: string[]): Promise<boolean> {
 		this.logger.info(`Sending event: ${subject}`);
 
 		let eventBridge = new EventBridge(buildAwsClientConfig(this.region, "AWS_EVENTBRIDGE_ENDPOINT"));
@@ -37,6 +37,7 @@ export class AwsEventBridgeEventbusProvider implements EventbusProviderInterface
 						Source: this.appPrefix,
 						DetailType: subject,
 						Detail: JSON.stringify(message),
+						Resources: resources,
 					},
 				],
 			})

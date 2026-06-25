@@ -1,3 +1,4 @@
+export { asyncLocalStorage } from "./common/async-local-storage";
 export { container, Lifecycle, inject, injectWithTransform, injectable, autoInjectable } from "tsyringe";
 export { connectDatabase } from "./common/sequelize";
 export { generateApiDocs } from "./codegen/api-docs/generate-api-docs";
@@ -81,9 +82,8 @@ export * from "./fetch";
 export * from "./validation/validators";
 import * as joi from "joi";
 import * as defaultJoiTranslations from "./locale/joi.json";
-import i18n from "i18n";
 
-type I18nType = typeof i18n;
+type I18nType = any;
 
 export { joi, defaultJoiTranslations, I18nType };
 
